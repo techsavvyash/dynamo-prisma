@@ -1,0 +1,16 @@
+{
+   "schema: record(<
+	schemaName: string,
+      Fields:{
+            “fieldName”:string
+		"type": "string | number | boolean | json | datetime" (anything allowed in PG),
+            "description": string,
+            "maxLength": string | undefined,
+            “defualt”: string | undefined,
+            "nullable": boolean,
+            "unique": boolean,
+            "vectorEmbed": boolean,
+            “embeddingAlgo”: string
+            }>),
+     description: string
+}
