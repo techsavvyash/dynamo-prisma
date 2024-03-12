@@ -1,92 +1,42 @@
 import * as fs from "fs";
+import {
+  createDataSource,
+  createModel,
+  createScalarField,
+  createSchema,
+  print,
+} from "prisma-schema-dsl";
+import { DataSourceProvider, ScalarType } from "prisma-schema-dsl-types";
 
+// Interface for Field
 interface Field {
-  name: string;
+  fieldName: string;
   type: string;
-  isRequired?: boolean;
-  isUnique?: boolean;
-  isId?: boolean;
-  // enum?: string[]; // TODO Add support for enums
-  relationName?: string | null;
-  relationToFields?: string[];
-  relationToReferences?: string[];
-  relationOnDelete?: "NONE";
-  isList?: boolean;
-  default?: any;
+  description: string;
+  maxLength: number | null;
+  default?: string | null;
+  nullable: boolean;
+  unique: boolean;
+  vectorEmbed: boolean;
+  embeddingAlgo: string;
 }
 
-interface Model {
-  name: string;
-  fields: Field[];
-}
-
-interface DataSourceURL {
-  fromEnv: string;
-}
-
-interface DataSource {
-  name: string;
-  provider: string; // TODO enum the values
-  url: string | DataSourceURL;
-}
-
+// Interface for Schema
 interface Schema {
-  models: Model[];
-  dataSource?: DataSource;
-}
-
-function generatePrismaSchema(schema: Schema): string {
-  let prismaSchema = "";
-
-  if (schema.dataSource) {
-    prismaSchema += `datasource ${schema.dataSource.name} {
-  provider = "${schema.dataSource.provider}"
-  url      = ${
-    typeof schema.dataSource.url === "string"
-      ? `"${schema.dataSource.url}"`
-      : `env("${schema.dataSource.url.fromEnv}")`
-  }
-}\n\n`;
-  }
-
-  // TODO Generate Enums Assuming enums are not present in the schema
-
-  for (const model of schema.models) {
-    prismaSchema += `model ${model.name} {\n`;
-    for (const field of model.fields) {
-      prismaSchema += `  ${field.name} ${field.type}${
-        field.isRequired ? "!" : ""
-        // TODO Add check for default value, if default value is autoincrement then it should be int else it should be string
-        // TODO Also it shoudnt be nullable
-      }${field.isUnique ? " @unique" : ""}${field.isId ? " @id" : ""}${
-        field.isList ? "[]" : ""
-      }${
-        field.relationName ? ` @relation(name: "${field.relationName}")` : ""
-      }${
-        field.relationToFields
-          ? ` @relation(fields: [${field.relationToFields
-              .map((f) => `"${f}"`)
-              .join(", ")}])`
-          : ""
-      }${
-        field.relationToReferences
-          ? ` @relation(references: [${field.relationToReferences
-              .map((f) => `"${f}"`)
-              .join(", ")}])`
-          : ""
-      }${
-        field.relationOnDelete
-          ? ` @relation(onDelete: ${field.relationOnDelete})`
-          : ""
-      }${field.default !== undefined ? ` @default(${field.default})` : ""}\n`;
+  schema: Record<
+    string,
+    {
+      schemaName: string;
+      fields: Record<string, Field>;
+      description: string;
     }
-    prismaSchema += `}\n\n`;
-  }
-
-  return prismaSchema;
+  >;
+  description: string;
 }
 
+// Function to read JSON file and generate Prisma schema
 function generatePrismaSchemaFromFile(filePath: string): void {
+  // Read JSON file
   fs.readFile(filePath, "utf8", (err, data) => {
     if (err) {
       console.error("Error reading JSON file:", err);
@@ -94,15 +44,57 @@ function generatePrismaSchemaFromFile(filePath: string): void {
     }
 
     try {
-      const schema: Schema = JSON.parse(data);
-      const prismaSchema = generatePrismaSchema(schema);
+      // Parse JSON data
+      const jsonData: Schema = JSON.parse(data);
 
-      fs.writeFile("prisma.schema", prismaSchema, (err) => {
-        if (err) {
-          console.error("Error writing Prisma schema:", err);
-        } else {
-          console.log("Prisma schema generated successfully!");
+      // Create models array
+      const models: any[] = [];
+      for (const key in jsonData.schema) {
+        if (jsonData.schema.hasOwnProperty(key)) {
+          const schemaItem = jsonData.schema[key];
+          const fields: any[] = [];
+          for (const fieldKey in schemaItem.fields) {
+            if (schemaItem.fields.hasOwnProperty(fieldKey)) {
+              const fieldData = schemaItem.fields[fieldKey];
+              fields.push(
+                createScalarField(
+                  fieldData.fieldName,
+                  fieldData.type as ScalarType,
+                  false, //isList boolean | undefined
+                  !fieldData.nullable, //isRequired boolean | undefined
+                  fieldData.unique,
+                  undefined, // isId boolean | undefined
+                  undefined, // isUpdatedAt  boolean | undefined
+                  fieldData.default, // default values SaclarFeildDefault | undefined
+                  undefined, // documentation string | undefined
+                  undefined, // isForeignKey boolean | undefined
+                  undefined // attributes in string | string[] | undefined
+                )
+              );
+            }
+          }
+          models.push(createModel(schemaItem.schemaName, fields));
         }
+      }
+
+      const DataSource = createDataSource(
+        "db",
+        DataSourceProvider.PostgreSQL,
+        "localhost"
+      );
+      // Create Prisma schema
+      const schema = createSchema(models, [], DataSource, []);
+
+      // Print Prisma schema
+      print(schema).then((prismaSchema) => {
+        fs.mkdirSync("./prisma", { recursive: true });
+        fs.writeFile("./prisma/schema.prisma", prismaSchema, (err) => {
+          if (err) {
+            console.error("Error writing Prisma schema:", err);
+          } else {
+            console.log("Prisma schema generated successfully!");
+          }
+        });
       });
     } catch (error) {
       console.error("Error parsing JSON:", error);
@@ -110,6 +102,7 @@ function generatePrismaSchemaFromFile(filePath: string): void {
   });
 }
 
+// Check if file address is provided as argument
 if (process.argv.length < 3) {
   console.error("Please provide the file address as an argument.");
   process.exit(1);
@@ -117,4 +110,5 @@ if (process.argv.length < 3) {
 
 const filePath = process.argv[2];
 
+// Generate Prisma schema from file
 generatePrismaSchemaFromFile(filePath);

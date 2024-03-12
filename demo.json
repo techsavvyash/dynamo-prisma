@@ -1,97 +1,179 @@
 {
-  "models": [
-    {
-      "name": "User",
-      "fields": [
-        {
-          "name": "id",
+  "schema": {
+    "User": {
+      "schemaName": "User",
+      "fields": {
+        "id": {
+          "fieldName": "id",
           "type": "String",
-          "isRequired": true,
-          "isId": true
+          "description": "ID of the user",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": true,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
         },
-        {
-          "name": "username",
+        "username": {
+          "fieldName": "username",
           "type": "String",
-          "isRequired": true,
-          "isUnique": true
+          "description": "Username of the user",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": true,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
         },
-        {
-          "name": "email",
+        "email": {
+          "fieldName": "email",
           "type": "String",
-          "isRequired": true,
-          "isUnique": true
+          "description": "Email of the user",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": true,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
         },
-        {
-          "name": "password",
+        "password": {
+          "fieldName": "password",
           "type": "String",
-          "isRequired": true
+          "description": "Password of the user",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
         },
-        {
-          "name": "posts",
-          "type": "Post[]"
-        }
-      ]
-    },
-    {
-      "name": "Post",
-      "fields": [
-        {
-          "name": "id",
-          "type": "String",
-          "isRequired": true,
-          "isId": true
-        },
-        {
-          "name": "title",
-          "type": "String",
-          "isRequired": true
-        },
-        {
-          "name": "content",
-          "type": "String",
-          "isRequired": true
-        },
-        {
-          "name": "author",
-          "type": "User",
-          "relationName": "author",
-          "isRequired": true
-        },
-        {
-          "name": "comments",
-          "type": "Comment[]"
-        }
-      ]
-    },
-    {
-      "name": "Comment",
-      "fields": [
-        {
-          "name": "id",
-          "type": "String",
-          "isRequired": true,
-          "isId": true
-        },
-        {
-          "name": "content",
-          "type": "String",
-          "isRequired": true
-        },
-        {
-          "name": "author",
-          "type": "User",
-          "relationName": "author",
-          "isRequired": true
-        },
-        {
-          "name": "post",
+        "posts": {
+          "fieldName": "posts",
           "type": "Post",
-          "relationName": "post",
-          "isRequired": true
+          "description": "Posts authored by the user",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
         }
-      ]
+      },
+      "description": "User model"
+    },
+    "Post": {
+      "schemaName": "Post",
+      "fields": {
+        "id": {
+          "fieldName": "id",
+          "type": "String",
+          "description": "ID of the post",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": true,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        },
+        "title": {
+          "fieldName": "title",
+          "type": "String",
+          "description": "Title of the post",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        },
+        "content": {
+          "fieldName": "content",
+          "type": "String",
+          "description": "Content of the post",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        },
+        "author": {
+          "fieldName": "author",
+          "type": "User",
+          "description": "Author of the post",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        },
+        "comments": {
+          "fieldName": "comments",
+          "type": "Comment",
+          "description": "Comments associated with the post",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        }
+      },
+      "description": "Post model"
+    },
+    "Comment": {
+      "schemaName": "Comment",
+      "fields": {
+        "id": {
+          "fieldName": "id",
+          "type": "String",
+          "description": "ID of the comment",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": true,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        },
+        "content": {
+          "fieldName": "content",
+          "type": "String",
+          "description": "Content of the comment",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        },
+        "author": {
+          "fieldName": "author",
+          "type": "User",
+          "description": "Author of the comment",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        },
+        "post": {
+          "fieldName": "post",
+          "type": "Post",
+          "description": "Post associated with the comment",
+          "maxLength": null,
+          "default": null,
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false,
+          "embeddingAlgo": ""
+        }
+      },
+      "description": "Comment model"
     }
-  ],
+  },
+  "description": "Prisma schema for blog application",
   "dataSource": {
     "name": "db",
     "provider": "postgresql",

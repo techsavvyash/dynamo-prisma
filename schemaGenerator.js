@@ -1,40 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// Importing necessary modules
 var fs = require("fs");
-// Function to generate Prisma schema
-function generatePrismaSchema(schema) {
-    var prismaSchema = "";
-    // Generate DataSource
-    if (schema.dataSource) {
-        prismaSchema += "datasource ".concat(schema.dataSource.name, " {\n  provider = \"").concat(schema.dataSource.provider, "\"\n  url      = ").concat(typeof schema.dataSource.url === "string"
-            ? "\"".concat(schema.dataSource.url, "\"")
-            : "env(\"".concat(schema.dataSource.url.fromEnv, "\")"), "\n}\n\n");
-    }
-    // Generate Enums
-    // Assuming enums are not present in the schema
-    // Generate Models
-    for (var _i = 0, _a = schema.models; _i < _a.length; _i++) {
-        var model = _a[_i];
-        prismaSchema += "model ".concat(model.name, " {\n");
-        for (var _b = 0, _c = model.fields; _b < _c.length; _b++) {
-            var field = _c[_b];
-            prismaSchema += "  ".concat(field.name, " ").concat(field.type).concat(field.isRequired ? "!" : "").concat(field.isUnique ? " @unique" : "").concat(field.isId ? " @id" : "").concat(field.isList ? "[]" : "").concat(field.relationName ? " @relation(name: \"".concat(field.relationName, "\")") : "").concat(field.relationToFields
-                ? " @relation(fields: [".concat(field.relationToFields
-                    .map(function (f) { return "\"".concat(f, "\""); })
-                    .join(", "), "])")
-                : "").concat(field.relationToReferences
-                ? " @relation(references: [".concat(field.relationToReferences
-                    .map(function (f) { return "\"".concat(f, "\""); })
-                    .join(", "), "])")
-                : "").concat(field.relationOnDelete
-                ? " @relation(onDelete: ".concat(field.relationOnDelete, ")")
-                : "").concat(field.default !== undefined ? " @default(".concat(field.default, ")") : "", "\n");
-        }
-        prismaSchema += "}\n\n";
-    }
-    return prismaSchema;
-}
+var prisma_schema_dsl_1 = require("prisma-schema-dsl");
+var prisma_schema_dsl_types_1 = require("prisma-schema-dsl-types");
 // Function to read JSON file and generate Prisma schema
 function generatePrismaSchemaFromFile(filePath) {
     // Read JSON file
@@ -45,17 +13,44 @@ function generatePrismaSchemaFromFile(filePath) {
         }
         try {
             // Parse JSON data
-            var schema = JSON.parse(data);
-            // Generate Prisma schema
-            var prismaSchema = generatePrismaSchema(schema);
-            // Write Prisma schema to file
-            fs.writeFile("prisma.schema", prismaSchema, function (err) {
-                if (err) {
-                    console.error("Error writing Prisma schema:", err);
+            var jsonData = JSON.parse(data);
+            // Create models array
+            var models = [];
+            for (var key in jsonData.schema) {
+                if (jsonData.schema.hasOwnProperty(key)) {
+                    var schemaItem = jsonData.schema[key];
+                    var fields = [];
+                    for (var fieldKey in schemaItem.fields) {
+                        if (schemaItem.fields.hasOwnProperty(fieldKey)) {
+                            var fieldData = schemaItem.fields[fieldKey];
+                            fields.push((0, prisma_schema_dsl_1.createScalarField)(fieldData.fieldName, fieldData.type, false, //isList boolean | undefined
+                            !fieldData.nullable, //isRequired boolean | undefined
+                            fieldData.unique, undefined, // isId boolean | undefined
+                            undefined, // isUpdatedAt  boolean | undefined
+                            fieldData.default, // default values SaclarFeildDefault | undefined
+                            undefined, // documentation string | undefined
+                            undefined, // isForeignKey boolean | undefined
+                            undefined // attributes in string | string[] | undefined
+                            ));
+                        }
+                    }
+                    models.push((0, prisma_schema_dsl_1.createModel)(schemaItem.schemaName, fields));
                 }
-                else {
-                    console.log("Prisma schema generated successfully!");
-                }
+            }
+            var DataSource = (0, prisma_schema_dsl_1.createDataSource)("db", prisma_schema_dsl_types_1.DataSourceProvider.PostgreSQL, "localhost");
+            // Create Prisma schema
+            var schema = (0, prisma_schema_dsl_1.createSchema)(models, [], DataSource, []);
+            // Print Prisma schema
+            (0, prisma_schema_dsl_1.print)(schema).then(function (prismaSchema) {
+                fs.mkdirSync("./prisma", { recursive: true });
+                fs.writeFile("./prisma/schema.prisma", prismaSchema, function (err) {
+                    if (err) {
+                        console.error("Error writing Prisma schema:", err);
+                    }
+                    else {
+                        console.log("Prisma schema generated successfully!");
+                    }
+                });
             });
         }
         catch (error) {

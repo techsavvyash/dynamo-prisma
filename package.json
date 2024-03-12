@@ -5,12 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "generate-schema": "tsc schemaGenerator.ts && node schemaGenerator.js"
+    "generate-schema": "tsc schemaGenerator.ts && node schemaGenerator.js",
+    "verify-schema": "npx prisma validate"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "jest": "^29.7.0",
+    "prisma-schema-dsl": "^2.2.0",
+    "prisma-schema-dsl-types": "^1.1.2",
     "tsc": "^2.0.4",
     "typescript": "^5.4.2"
   }
