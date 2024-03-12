@@ -1,0 +1,4 @@
+model User {
+  id: string @id @unique @index @default(uuid()) @db.VarChar(50) @db.Enum("admin", "user", "guest")
+  name: string
+}

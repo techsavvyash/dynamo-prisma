@@ -1,0 +1,34 @@
+{
+  "name": "User",
+  "fields": {
+    "Attribute": [
+      {
+        "Name": "id",
+        "Type": "string",
+        "Additional": {
+          "isRequired": true,
+          "isUnique": true,
+          "isDefault": true,
+          "isNullable": false,
+          "isIndexed": true,
+          "isReadOnly": false,
+          "maxLength": 50,
+          "minLength": 3,
+          "pattern": "^\\w+$",
+          "format": "email",
+          "enumValues": ["admin", "user", "guest"],
+          "examples": ["john.doe@example.com", "jane_doe", "guest@example.com"],
+          "description": "Unique identifier for the user",
+          "Defaultvalues": {
+            "Uuid": true,
+            "Autoincrement": false
+          }
+        }
+      },
+      {
+        "Name": "name",
+        "Type": "string"
+      }
+    ]
+  }
+}
