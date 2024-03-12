@@ -1,94 +1,87 @@
-const fs = require("fs");
+import * as fs from "fs";
 
-interface AdditionalOptions {
+interface Field {
+  name: string;
+  type: string;
   isRequired?: boolean;
   isUnique?: boolean;
-  isDefault?: boolean;
-  isNullable?: boolean;
-  isIndexed?: boolean;
-  isReadOnly?: boolean;
-  maxLength?: number;
-  minLength?: number;
-  pattern?: string;
-  format?: string;
-  enumValues?: string[];
-  examples?: string[];
-  description?: string;
-  Defaultvalues?: {
-    Uuid: boolean;
-    Autoincrement: boolean;
-  };
+  isId?: boolean;
+  // enum?: string[]; // TODO Add support for enums
+  relationName?: string | null;
+  relationToFields?: string[];
+  relationToReferences?: string[];
+  relationOnDelete?: "NONE";
+  isList?: boolean;
+  default?: any;
 }
 
-interface Attribute {
-  Name: string;
-  Type: string;
-  Additional?: AdditionalOptions;
-  DefaultValue?: any;
-}
-
-interface Fields {
-  Attribute: Attribute[];
-}
-
-interface Entity {
+interface Model {
   name: string;
-  fields: Fields;
+  fields: Field[];
 }
 
-function generatePrismaSchema(entity: Entity): string {
-  let prismaSchema = `model ${entity.name} {\n`;
+interface DataSourceURL {
+  fromEnv: string;
+}
 
-  const attributes = entity.fields.Attribute;
-  for (const attribute of attributes) {
-    prismaSchema += `  ${attribute.Name}: ${attribute.Type}`;
+interface DataSource {
+  name: string;
+  provider: string; // TODO enum the values
+  url: string | DataSourceURL;
+}
 
-    if (attribute.Additional) {
-      const additional = attribute.Additional;
+interface Schema {
+  models: Model[];
+  dataSource?: DataSource;
+}
 
-      if (additional.isRequired) {
-        prismaSchema += ` @id`;
-      }
+function generatePrismaSchema(schema: Schema): string {
+  let prismaSchema = "";
 
-      if (additional.isUnique) {
-        prismaSchema += ` @unique`;
-      }
-
-      if (additional.isIndexed) {
-        prismaSchema += ` @index`;
-      }
-
-      if (additional.isDefault && attribute.DefaultValue !== undefined) {
-        prismaSchema += ` @default(${attribute.DefaultValue})`;
-      } else if (
-        additional.isDefault &&
-        additional.Defaultvalues &&
-        additional.Defaultvalues.Autoincrement
-      ) {
-        prismaSchema += ` @default(autoincrement())`;
-      } else if (
-        additional.isDefault &&
-        additional.Defaultvalues &&
-        additional.Defaultvalues.Uuid
-      ) {
-        prismaSchema += ` @default(uuid())`;
-      }
-
-      if (!additional.isNullable) {
-        prismaSchema += ` @db.VarChar(${additional.maxLength})`;
-      }
-
-      if (additional.enumValues && additional.enumValues.length > 0) {
-        prismaSchema += ` @db.Enum(${additional.enumValues
-          .map((value) => `"${value}"`)
-          .join(", ")})`;
-      }
-    }
-
-    prismaSchema += `\n`;
+  if (schema.dataSource) {
+    prismaSchema += `datasource ${schema.dataSource.name} {
+  provider = "${schema.dataSource.provider}"
+  url      = ${
+    typeof schema.dataSource.url === "string"
+      ? `"${schema.dataSource.url}"`
+      : `env("${schema.dataSource.url.fromEnv}")`
+  }
+}\n\n`;
   }
 
-  prismaSchema += `}`;
+  // TODO Generate Enums Assuming enums are not present in the schema
+
+  for (const model of schema.models) {
+    prismaSchema += `model ${model.name} {\n`;
+    for (const field of model.fields) {
+      prismaSchema += `  ${field.name} ${field.type}${
+        field.isRequired ? "!" : ""
+        // TODO Add check for default value, if default value is autoincrement then it should be int else it should be string
+        // TODO Also it shoudnt be nullable
+      }${field.isUnique ? " @unique" : ""}${field.isId ? " @id" : ""}${
+        field.isList ? "[]" : ""
+      }${
+        field.relationName ? ` @relation(name: "${field.relationName}")` : ""
+      }${
+        field.relationToFields
+          ? ` @relation(fields: [${field.relationToFields
+              .map((f) => `"${f}"`)
+              .join(", ")}])`
+          : ""
+      }${
+        field.relationToReferences
+          ? ` @relation(references: [${field.relationToReferences
+              .map((f) => `"${f}"`)
+              .join(", ")}])`
+          : ""
+      }${
+        field.relationOnDelete
+          ? ` @relation(onDelete: ${field.relationOnDelete})`
+          : ""
+      }${field.default !== undefined ? ` @default(${field.default})` : ""}\n`;
+    }
+    prismaSchema += `}\n\n`;
+  }
 
   return prismaSchema;
 }
@@ -101,9 +94,8 @@ function generatePrismaSchemaFromFile(filePath: string): void {
     }
 
     try {
-      const jsonData: Entity = JSON.parse(data);
-
-      const prismaSchema = generatePrismaSchema(jsonData);
+      const schema: Schema = JSON.parse(data);
+      const prismaSchema = generatePrismaSchema(schema);
 
       fs.writeFile("prisma.schema", prismaSchema, (err) => {
         if (err) {

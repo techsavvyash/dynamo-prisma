@@ -1,34 +1,102 @@
 {
-  "name": "User",
-  "fields": {
-    "Attribute": [
-      {
-        "Name": "id",
-        "Type": "string",
-        "Additional": {
+  "models": [
+    {
+      "name": "User",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
           "isRequired": true,
-          "isUnique": true,
-          "isDefault": true,
-          "isNullable": false,
-          "isIndexed": true,
-          "isReadOnly": false,
-          "maxLength": 50,
-          "minLength": 3,
-          "pattern": "^\\w+$",
-          "format": "email",
-          "enumValues": ["admin", "user", "guest"],
-          "examples": ["john.doe@example.com", "jane_doe", "guest@example.com"],
-          "description": "Unique identifier for the user",
-          "Defaultvalues": {
-            "Uuid": true,
-            "Autoincrement": false
-          }
+          "isId": true
+        },
+        {
+          "name": "username",
+          "type": "String",
+          "isRequired": true,
+          "isUnique": true
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "isRequired": true,
+          "isUnique": true
+        },
+        {
+          "name": "password",
+          "type": "String",
+          "isRequired": true
+        },
+        {
+          "name": "posts",
+          "type": "Post[]"
         }
-      },
-      {
-        "Name": "name",
-        "Type": "string"
-      }
-    ]
+      ]
+    },
+    {
+      "name": "Post",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "isRequired": true,
+          "isId": true
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "isRequired": true
+        },
+        {
+          "name": "content",
+          "type": "String",
+          "isRequired": true
+        },
+        {
+          "name": "author",
+          "type": "User",
+          "relationName": "author",
+          "isRequired": true
+        },
+        {
+          "name": "comments",
+          "type": "Comment[]"
+        }
+      ]
+    },
+    {
+      "name": "Comment",
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "isRequired": true,
+          "isId": true
+        },
+        {
+          "name": "content",
+          "type": "String",
+          "isRequired": true
+        },
+        {
+          "name": "author",
+          "type": "User",
+          "relationName": "author",
+          "isRequired": true
+        },
+        {
+          "name": "post",
+          "type": "Post",
+          "relationName": "post",
+          "isRequired": true
+        }
+      ]
+    }
+  ],
+  "dataSource": {
+    "name": "db",
+    "provider": "postgresql",
+    "url": {
+      "fromEnv": "DATABASE_URL"
+    }
   }
 }
