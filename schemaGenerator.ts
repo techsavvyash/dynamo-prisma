@@ -8,8 +8,7 @@ import {
 } from "prisma-schema-dsl";
 import { DataSourceProvider, ScalarType } from "prisma-schema-dsl-types";
 
-// Interface for Field
-interface Field {
+export interface Field {
   fieldName: string;
   type: string;
   description: string;
@@ -21,8 +20,7 @@ interface Field {
   embeddingAlgo: string;
 }
 
-// Interface for Schema
-interface Schema {
+export interface Schema {
   schema: Record<
     string,
     {
@@ -34,58 +32,25 @@ interface Schema {
   description: string;
 }
 
-// Function to read JSON file and generate Prisma schema
-function generatePrismaSchemaFromFile(filePath: string): void {
-  // Read JSON file
-  fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) {
-      console.error("Error reading JSON file:", err);
-      return;
-    }
-
-    try {
-      // Parse JSON data
-      const jsonData: Schema = JSON.parse(data);
-
-      // Create models array
-      const models: any[] = [];
-      for (const key in jsonData.schema) {
-        if (jsonData.schema.hasOwnProperty(key)) {
-          const schemaItem = jsonData.schema[key];
-          const fields: any[] = [];
-          for (const fieldKey in schemaItem.fields) {
-            if (schemaItem.fields.hasOwnProperty(fieldKey)) {
-              const fieldData = schemaItem.fields[fieldKey];
-              fields.push(
-                createScalarField(
-                  fieldData.fieldName,
-                  fieldData.type as ScalarType,
-                  false, //isList boolean | undefined
-                  !fieldData.nullable, //isRequired boolean | undefined
-                  fieldData.unique,
-                  undefined, // isId boolean | undefined
-                  undefined, // isUpdatedAt  boolean | undefined
-                  fieldData.default, // default values SaclarFeildDefault | undefined
-                  undefined, // documentation string | undefined
-                  undefined, // isForeignKey boolean | undefined
-                  undefined // attributes in string | string[] | undefined
-                )
-              );
-            }
-          }
-          models.push(createModel(schemaItem.schemaName, fields));
-        }
-      }
+export function generatePrismaSchemaFromFile(filePath: string): void {
+  console.warn("File path: ", filePath);
+  readJsonFile(filePath)
+    .then((jsonData: Schema) => {
+      const models: any[] = createModels(jsonData.schema);
+      console.warn("Model generated");
+      // console.log(models);
 
       const DataSource = createDataSource(
         "db",
         DataSourceProvider.PostgreSQL,
         "localhost"
       );
-      // Create Prisma schema
-      const schema = createSchema(models, [], DataSource, []);
+      console.warn("DataSource generated");
+      // console.log(DataSource);
 
-      // Print Prisma schema
+      const schema = createSchema(models, [], DataSource, []);
+      console.warn("schema generated");
+      // console.log(schema);
       print(schema).then((prismaSchema) => {
         fs.mkdirSync("./prisma", { recursive: true });
         fs.writeFile("./prisma/schema.prisma", prismaSchema, (err) => {
@@ -96,19 +61,68 @@ function generatePrismaSchemaFromFile(filePath: string): void {
           }
         });
       });
-    } catch (error) {
+    })
+    .catch((error) => {
       console.error("Error parsing JSON:", error);
-    }
+    });
+}
+
+export function readJsonFile(filePath: string): Promise<Schema> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, "utf8", (err, data) => {
+      if (err) {
+        console.error("Failed to read File. ERROR: ", err);
+        reject(err);
+        return;
+      }
+
+      try {
+        const jsonData: Schema = JSON.parse(data);
+        console.log(jsonData);
+        resolve(jsonData);
+      } catch (error) {
+        console.error("Failed to parse. ERROR: ", err);
+        reject(error);
+      }
+    });
   });
 }
 
-// Check if file address is provided as argument
-if (process.argv.length < 3) {
-  console.error("Please provide the file address as an argument.");
-  process.exit(1);
+export function createModels(schema: Record<string, any>): any[] {
+  const models: any[] = [];
+  for (const key in schema) {
+    if (schema.hasOwnProperty(key)) {
+      const schemaItem = schema[key];
+      const fields: any[] = createFields(schemaItem.fields);
+      models.push(createModel(schemaItem.schemaName, fields));
+    }
+  }
+  return models;
 }
 
-const filePath = process.argv[2];
-
-// Generate Prisma schema from file
-generatePrismaSchemaFromFile(filePath);
+export function createFields(fields: Record<string, Field>): any[] {
+  // console.error("Feilds: ", fields);
+  const result: any[] = [];
+  for (const fieldKey in fields) {
+    if (fields.hasOwnProperty(fieldKey)) {
+      const fieldData = fields[fieldKey];
+      result.push(
+        createScalarField(
+          fieldData.fieldName,
+          fieldData.type as ScalarType,
+          false, //isList boolean | undefined
+          !fieldData.nullable, //isRequired boolean | undefined
+          fieldData.unique,
+          undefined, // isId boolean | undefined
+          undefined, // isUpdatedAt  boolean | undefined
+          fieldData.default, // default values SaclarFeildDefault | undefined
+          undefined, // documentation string | undefined
+          undefined, // isForeignKey boolean | undefined
+          undefined // attributes in string | string[] | undefined
+        )
+      );
+    }
+  }
+  // console.log("Results: ", result);
+  return result;
+}
