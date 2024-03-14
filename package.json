@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "generate-schema": "tsc schemaGenerator.ts && node schemaGenerator.js",
+    "generate-schema": "tsc cli.ts && node cli.js ./demo.json",
     "verify-schema": "npx prisma validate"
   },
   "author": "",

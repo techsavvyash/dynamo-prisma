@@ -1,12 +1,19 @@
 import * as fs from "fs";
 import {
   createDataSource,
+  createGenerator,
   createModel,
   createScalarField,
   createSchema,
   print,
 } from "prisma-schema-dsl";
-import { DataSourceProvider, ScalarType } from "prisma-schema-dsl-types";
+import {
+  DataSourceProvider,
+  DataSourceURLEnv,
+  Enum,
+  ScalarType,
+  isDataSourceURLEnv,
+} from "prisma-schema-dsl-types";
 
 export interface Field {
   fieldName: string;
@@ -16,20 +23,31 @@ export interface Field {
   default?: string | null;
   nullable: boolean;
   unique: boolean;
-  vectorEmbed: boolean;
-  embeddingAlgo: string;
+  isId?: boolean;
+  vectorEmbed?: boolean;
+  embeddingAlgo?: string;
 }
 
 export interface Schema {
-  schema: Record<
-    string,
-    {
-      schemaName: string;
-      fields: Record<string, Field>;
-      description: string;
-    }
-  >;
-  description: string;
+  schema: [{ schemaName: string; fields: Field[]; description: string }];
+  dataSource?: {
+    name: string;
+    provider: DataSourceProvider;
+    url: {
+      url: string;
+      fromEnv: string;
+    };
+  };
+  enum?: Enum[];
+  // generator?: {
+  //   generatorName: string;
+  //   fields: [
+  //     {
+  //       name: string;
+  //       attrib: string;
+  //     }
+  //   ];
+  // };
 }
 
 export function generatePrismaSchemaFromFile(filePath: string): void {
@@ -37,18 +55,44 @@ export function generatePrismaSchemaFromFile(filePath: string): void {
   readJsonFile(filePath)
     .then((jsonData: Schema) => {
       const models: any[] = createModels(jsonData.schema);
-      console.warn("Model generated");
+      console.log("Model generated");
       // console.log(models);
-
+      // console.warn(
+      //   "URL is ENV",
+      //   isDataSourceURLEnv(jsonData.dataSource!.urlEnv)
+      // );           // ! COMES OUT FALSE
       const DataSource = createDataSource(
-        "db",
-        DataSourceProvider.PostgreSQL,
-        "localhost"
+        jsonData.dataSource?.name ? jsonData.dataSource!.name : "db",
+        jsonData.dataSource?.provider
+          ? jsonData.dataSource!.provider
+          : DataSourceProvider.PostgreSQL,
+        jsonData.dataSource?.url
+          ? jsonData.dataSource!.url.url
+            ? jsonData.dataSource!.url.url
+            : // : (env(`${jsonData.dataSource!.url.fromEnv}"`) as unknown as string)
+              (`${
+                jsonData.dataSource!.url.fromEnv
+              }` as unknown as DataSourceURLEnv)
+          : "localhost"
       );
-      console.warn("DataSource generated");
+      console.log("DataSource generated");
       // console.log(DataSource);
 
-      const schema = createSchema(models, [], DataSource, []);
+      const Generator = createGenerator("client", "prisma-client-js");
+      // const Generator = `
+      // generator ${jsonData.generator?.generatorName} {
+      //   ${
+      //     jsonData.generator?.fields.length
+      //       ? jsonData.generator!.fields.map(
+      //           (field) => "field.name = field.attrib"
+      //         )
+      //       : 'provider      = "prisma-client-js"'
+      //   }
+      // }
+      // `;
+
+      const Enum = jsonData.enum!;
+      const schema = createSchema(models, Enum, DataSource, [Generator]);
       console.warn("schema generated");
       // console.log(schema);
       print(schema).then((prismaSchema) => {
@@ -88,37 +132,64 @@ export function readJsonFile(filePath: string): Promise<Schema> {
   });
 }
 
-export function createModels(schema: Record<string, any>): any[] {
+export function createModels(schema: Schema["schema"]): any[] {
   const models: any[] = [];
-  for (const key in schema) {
-    if (schema.hasOwnProperty(key)) {
-      const schemaItem = schema[key];
-      const fields: any[] = createFields(schemaItem.fields);
-      models.push(createModel(schemaItem.schemaName, fields));
-    }
+  for (const schemaItem of schema) {
+    const fields: any[] = createFields(schemaItem.fields);
+    models.push(createModel(schemaItem.schemaName, fields));
   }
   return models;
 }
 
-export function createFields(fields: Record<string, Field>): any[] {
+export function createFields(fields: Field[]): any[] {
   // console.error("Feilds: ", fields);
   const result: any[] = [];
-  for (const fieldKey in fields) {
-    if (fields.hasOwnProperty(fieldKey)) {
-      const fieldData = fields[fieldKey];
+  for (const fieldData of fields) {
+    result.push(
+      createScalarField(
+        fieldData.fieldName,
+        fieldData.type as ScalarType,
+        false, //isList boolean | undefined
+        !fieldData.nullable, //isRequired boolean | undefined
+        fieldData.unique,
+        fieldData.isId,
+        undefined, // isUpdatedAt
+        fieldData.default, // default values SaclarFeildDefault | undefined
+        undefined, // documentation string | undefined
+        undefined, // isForeignKey boolean | undefined
+        undefined // attributes in string | string[] | undefined
+      )
+    );
+
+    if (fieldData.vectorEmbed) {
       result.push(
         createScalarField(
-          fieldData.fieldName,
-          fieldData.type as ScalarType,
-          false, //isList boolean | undefined
-          !fieldData.nullable, //isRequired boolean | undefined
-          fieldData.unique,
-          undefined, // isId boolean | undefined
-          undefined, // isUpdatedAt  boolean | undefined
-          fieldData.default, // default values SaclarFeildDefault | undefined
-          undefined, // documentation string | undefined
-          undefined, // isForeignKey boolean | undefined
-          undefined // attributes in string | string[] | undefined
+          `${fieldData.fieldName}Algorithm`,
+          "String" as ScalarType,
+          false,
+          true,
+          false,
+          false,
+          undefined,
+          `"${fieldData.embeddingAlgo}"`,
+          undefined,
+          undefined,
+          undefined
+        ),
+        createScalarField(
+          `${fieldData.fieldName}Embedding`,
+          `Unsupported("vector[{${
+            fieldData.embeddingAlgo!.length
+          }}]")` as ScalarType,
+          false,
+          true,
+          false,
+          false,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined
         )
       );
     }
