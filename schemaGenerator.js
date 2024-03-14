@@ -90,15 +90,41 @@ function createModels(schema) {
     return models;
 }
 exports.createModels = createModels;
+// increment is breaking the code
+// ! ERROR: Error parsing JSON: Error: Default must be a number or call expression to autoincrement()
+// ? Log by console.war:
+/*  String;
+    Default
+    Default
+    Default
+    Default
+    Default
+    Int
+*/
 function createFields(fields) {
     // console.error("Feilds: ", fields);
     var result = [];
     for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
         var fieldData = fields_1[_i];
-        result.push((0, prisma_schema_dsl_1.createScalarField)(fieldData.fieldName, fieldData.type, false, //isList boolean | undefined
+        console.warn(fieldData.isId && fieldData.autoincrement
+            ? prisma_schema_dsl_types_1.ScalarType.Int
+            : fieldData.isId && fieldData.uuid
+                ? prisma_schema_dsl_types_1.ScalarType.String
+                : "Default");
+        result.push((0, prisma_schema_dsl_1.createScalarField)(fieldData.fieldName, 
+        // fieldData.type as ScalarType
+        fieldData.isId && fieldData.autoincrement
+            ? prisma_schema_dsl_types_1.ScalarType.Int
+            : fieldData.isId && fieldData.uuid
+                ? prisma_schema_dsl_types_1.ScalarType.String
+                : fieldData.type, false, //isList boolean | undefined
         !fieldData.nullable, //isRequired boolean | undefined
-        fieldData.unique, fieldData.isId, undefined, // isUpdatedAt
-        fieldData.default, // default values SaclarFeildDefault | undefined
+        fieldData.isId ? fieldData.isId : fieldData.unique, fieldData.isId, undefined, // isUpdatedAt
+        fieldData.isId && fieldData.autoincrement
+            ? "autoincrement()"
+            : fieldData.isId && fieldData.uuid
+                ? "uuid()"
+                : fieldData.default, // default values SaclarFeildDefault | undefined
         undefined, // documentation string | undefined
         undefined, // isForeignKey boolean | undefined
         undefined // attributes in string | string[] | undefined

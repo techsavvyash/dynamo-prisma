@@ -11,7 +11,8 @@
           "default": null,
           "nullable": false,
           "unique": false,
-          "isId": true
+          "isId": true,
+          "uuid": true
         },
         {
           "fieldName": "username",
@@ -66,13 +67,13 @@
       "fields": [
         {
           "fieldName": "id",
-          "type": "String",
+          "type": "Int",
           "description": "ID of the post",
           "maxLength": null,
-          "default": null,
           "nullable": false,
-          "unique": false,
-          "isId": true
+          "isId": true,
+          "unique": true,
+          "autoincrement": false
         },
         {
           "fieldName": "title",

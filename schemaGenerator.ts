@@ -21,6 +21,8 @@ export interface Field {
   description: string;
   maxLength: number | null;
   default?: string | null;
+  autoincrement?: boolean;
+  uuid?: boolean;
   nullable: boolean;
   unique: boolean;
   isId?: boolean;
@@ -141,20 +143,47 @@ export function createModels(schema: Schema["schema"]): any[] {
   return models;
 }
 
+// increment is breaking the code
+// ! ERROR: Error parsing JSON: Error: Default must be a number or call expression to autoincrement()
+// ? Log by console.war:
+/*  String;
+    Default
+    Default
+    Default
+    Default
+    Default
+    Int 
+*/
 export function createFields(fields: Field[]): any[] {
   // console.error("Feilds: ", fields);
   const result: any[] = [];
   for (const fieldData of fields) {
+    console.warn(
+      fieldData.isId && fieldData.autoincrement
+        ? ScalarType.Int
+        : fieldData.isId && fieldData.uuid
+        ? ScalarType.String
+        : "Default"
+    );
     result.push(
       createScalarField(
         fieldData.fieldName,
-        fieldData.type as ScalarType,
+        // fieldData.type as ScalarType
+        fieldData.isId && fieldData.autoincrement
+          ? ScalarType.Int
+          : fieldData.isId && fieldData.uuid
+          ? ScalarType.String
+          : (fieldData.type as ScalarType),
         false, //isList boolean | undefined
         !fieldData.nullable, //isRequired boolean | undefined
-        fieldData.unique,
+        fieldData.isId ? fieldData.isId : fieldData.unique,
         fieldData.isId,
         undefined, // isUpdatedAt
-        fieldData.default, // default values SaclarFeildDefault | undefined
+        fieldData.isId && fieldData.autoincrement
+          ? "autoincrement()"
+          : fieldData.isId && fieldData.uuid
+          ? "uuid()"
+          : fieldData.default, // default values SaclarFeildDefault | undefined
         undefined, // documentation string | undefined
         undefined, // isForeignKey boolean | undefined
         undefined // attributes in string | string[] | undefined
@@ -176,6 +205,7 @@ export function createFields(fields: Field[]): any[] {
           undefined,
           undefined
         ),
+
         createScalarField(
           `${fieldData.fieldName}Embedding`,
           `Unsupported("vector[{${
