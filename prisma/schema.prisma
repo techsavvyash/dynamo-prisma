@@ -1,6 +1,6 @@
-datasource dB {
+datasource db {
   provider = "postgresql"
-  url      = "DATABASE_URL"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -18,23 +18,24 @@ model User {
 }
 
 model Post {
-  id       Int      @id @unique
-  title    String
-  content  String
-  author   User     @relation(fields: [userId], references: [id])
-  comments Comment?
-  userId   String
+  id        Int      @id @unique @default(autoincrement())
+  title     String
+  content   String
+  author    User     @relation(fields: [userId], references: [id])
+  comments  Comment? @relation(fields: [commentId], references: [id])
+  userId    String
+  commentId String?
 }
 
 model Comment {
-  id            String                     @id @unique
+  id            String                   @id @unique
   content       String
-  author        User                       @relation(fields: [userId], references: [id])
-  post          Post                       @relation(fields: [postId], references: [id])
-  postAlgorithm String                     @default("whatever")
-  postEmbedding Unsupported("vector[{8}]")
+  author        User                     @relation(fields: [userId], references: [id])
+  post          String
+  postAlgorithm String                   @default("whatever")
+  postEmbedding Unsupported("vector(8)")
+  Post          Post[]
   userId        String
-  postId        Int
 }
 
 enum UserType {
