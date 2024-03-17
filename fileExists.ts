@@ -10,10 +10,21 @@ export function generateSchemaFromJson(
 ) {
   if (fs.existsSync(prismaFilePath)) {
     console.log("File exists");
+
+    const fileData = fs.readFileSync(prismaFilePath, "utf8");
+    const modelRegex = /model\s+(\w+)\s+{/g;
+    const models: string[] = [];
+    let match;
+    while ((match = modelRegex.exec(fileData)) !== null) {
+      const modelName = match[1];
+      models.push(modelName);
+    }
+
+    JsonChecks(jsonData, models);
     generateSchemaWhenFilePresent(jsonData, prismaFilePath);
   } else {
     console.log("Applying Checks....");
-    JsonChecks(jsonData);
+    JsonChecks(jsonData, []);
     generateIfNoSchema(jsonData);
   }
 }
@@ -104,7 +115,12 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
     jsonData.generator ? jsonData.generator!.binaryTargets : undefined // can be null | undefined | string[]
   );
 
+  console.log("Generator generated");
+  jsonData.enum
+    ? console.log("Enum exists")
+    : console.log("Enum does not exist");
   const Enum = jsonData.enum ? jsonData.enum! : [];
+  console.log("Enum generated");
   const schema = createSchema(models, Enum, undefined, [Generator]);
   const schemaString = await print(schema);
   result = DataSource + "\n" + schemaString;
@@ -134,7 +150,7 @@ export async function generateSchemaWhenFilePresent(
 
   var result: string;
 
-  const Enum = jsonData.enum!;
+  const Enum = jsonData.enum ? jsonData.enum! : [];
   const schema = createSchema(models, Enum, undefined, undefined);
   const schemaString = await print(schema);
   result =
