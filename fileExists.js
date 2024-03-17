@@ -41,19 +41,31 @@ var fs = require("fs");
 var schemaGenerator_1 = require("./schemaGenerator");
 var checks_1 = require("./checks");
 var prisma_schema_dsl_1 = require("prisma-schema-dsl");
+var child_process_1 = require("child_process");
 function GenerateSchemaFile(filePath) {
     var _this = this;
     var prismaFilePath = "./prisma/schema.prisma";
     readJsonFile(filePath)
         .then(function (jsonData) { return __awaiter(_this, void 0, void 0, function () {
+        var fileData, modelRegex, models, match, modelName;
         return __generator(this, function (_a) {
             if (fs.existsSync(prismaFilePath)) {
                 console.log("File exists");
-                generateSchemaWhenFilePresent(jsonData, prismaFilePath);
+                fileData = fs.readFileSync(prismaFilePath, "utf8");
+                modelRegex = /model\s+(\w+)\s+{/g;
+                models = [];
+                match = void 0;
+                while ((match = modelRegex.exec(fileData)) !== null) {
+                    modelName = match[1];
+                    models.push(modelName);
+                }
+                console.log("Models:", models);
+                (0, checks_1.JsonChecks)(jsonData, models);
+                // generateSchemaWhenFilePresent(jsonData, prismaFilePath);
             }
             else {
                 console.log("Applying Checks....");
-                (0, checks_1.JsonChecks)(jsonData);
+                (0, checks_1.JsonChecks)(jsonData, []);
                 generateIfNoSchema(jsonData);
             }
             return [2 /*return*/];
@@ -114,22 +126,7 @@ function generateIfNoSchema(jsonData) {
                         }
                         else {
                             console.log("Prisma schema generated successfully!");
-                            // TODO: DONE RUN: npx prisma validate
-                            // exec("npx prisma validate", (error, stdout, stderr) => {
-                            //   if (error) {
-                            //     console.error("Error executing 'npx prisma validate':", error);
-                            //     return;
-                            //   }
-                            //   console.log("commands executed successfully", stdout);
-                            // });
-                            // TODO: DONE RUN: prisma migrate dev
-                            // exec("prisma migrate dev", (error, stdout, stderr) => {
-                            //   if (error) {
-                            //     console.error("Error executing 'prisma migrate dev':", error);
-                            //     return;
-                            //   }
-                            //   console.log("Output of 'prisma migrate dev':", stdout);
-                            // });
+                            validateAndMigrate();
                         }
                     });
                     return [2 /*return*/];
@@ -165,26 +162,29 @@ function generateSchemaWhenFilePresent(jsonData, prismaFilePath) {
                         }
                         else {
                             console.log("Prisma schema generated successfully!");
-                            // TODO: DONE RUN: npx prisma validate
-                            // exec("npx prisma validate", (error, stdout, stderr) => {
-                            //   if (error) {
-                            //     console.error("Error executing 'npx prisma validate':", error);
-                            //     return;
-                            //   }
-                            //   console.log("commands executed successfully", stdout);
-                            // });
-                            // TODO: DONE RUN: prisma migrate dev
-                            // exec("prisma migrate dev", (error, stdout, stderr) => {
-                            //   if (error) {
-                            //     console.error("Error executing 'prisma migrate dev':", error);
-                            //     return;
-                            //   }
-                            //   console.log("Output of 'prisma migrate dev':", stdout);
-                            // });
+                            validateAndMigrate();
                         }
                     });
                     return [2 /*return*/];
             }
         });
+    });
+}
+function validateAndMigrate() {
+    // TODO: DONE RUN: npx prisma validate
+    (0, child_process_1.exec)("npx prisma validate", function (error, stdout, stderr) {
+        if (error) {
+            console.error("Error executing 'npx prisma validate':", error);
+            return;
+        }
+        console.log("commands executed successfully", stdout);
+    });
+    // TODO: DONE RUN: prisma migrate dev
+    (0, child_process_1.exec)("prisma migrate dev", function (error, stdout, stderr) {
+        if (error) {
+            console.error("Error executing 'prisma migrate dev':", error);
+            return;
+        }
+        console.log("Output of 'prisma migrate dev':", stdout);
     });
 }

@@ -1,8 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+ provider = "postgresql"
+ url = env("DATABASE_URL")
 }
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,7 +12,8 @@ model User {
   email    String    @unique
   type     UserType
   password String
-  posts    Post?
+  posts    Post?     @relation(fields: [postId], references: [id])
+  postId   Int?
   Comment  Comment[]
 }
 
@@ -21,48 +21,9 @@ model Post {
   id        Int      @id @unique @default(autoincrement())
   title     String
   content   String
-  author    User     @relation(fields: [userId], references: [id])
+  author    String
   comments  Comment? @relation(fields: [commentId], references: [id])
-  userId    String
-  commentId String?
-}
-
-model Comment {
-  id            String                   @id @unique
-  content       String
-  author        User                     @relation(fields: [userId], references: [id])
-  post          String
-  postAlgorithm String                   @default("whatever")
-  postEmbedding Unsupported("vector(8)")
-  Post          Post[]
-  userId        String
-}
-
-enum UserType {
-  ADMIN
-  USER
-}
-
-
- // Generated using schemaGenerator
-
-model User {
-  id       String    @id @unique @default(uuid())
-  username String    @unique
-  email    String    @unique
-  type     UserType
-  password String
-  posts    Post?
-  Comment  Comment[]
-}
-
-model Post {
-  id        Int      @id @unique @default(autoincrement())
-  title     String
-  content   String
-  author    User     @relation(fields: [userId], references: [id])
-  comments  Comment? @relation(fields: [commentId], references: [id])
-  userId    String
+  User      User[]
   commentId String?
 }
 
