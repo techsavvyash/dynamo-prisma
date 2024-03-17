@@ -34,7 +34,7 @@
         },
         {
           "fieldName": "type",
-          "type": "UserType",
+          "type": "String",
           "description": "Type of the user",
           "maxLength": null,
           "default": null,

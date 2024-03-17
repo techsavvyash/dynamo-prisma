@@ -1,5 +1,4 @@
 import { Schema, Field } from "./schemaGenerator";
-import * as fs from "fs";
 
 interface Model {
   schemaName: string;
@@ -39,7 +38,7 @@ export function JsonChecks(
 
   const fieldCounts: { [fieldName: string]: number } = {};
 
-  if (!hasNoDuplicates(enumNames)) {
+  if (!hasNoDuplicates(typesDefined)) {
     console.log("Duplicates found");
     process.exit(1);
   }

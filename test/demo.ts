@@ -1,4 +1,4 @@
-import { generateSchemaFromJson } from "./fileExists";
+import { generateSchemaFromJson } from "../src/fileExists";
 
 const JSONData = {
   schema: [
@@ -97,7 +97,7 @@ const JSONData = {
         },
         {
           fieldName: "author",
-          type: "User",
+          type: "String",
           description: "Author of the post",
           maxLength: null,
           default: null,

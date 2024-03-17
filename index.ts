@@ -3,4 +3,4 @@ export {
   generateSchemaWhenFilePresent,
   generateIfNoSchema,
   GenerateSchemaFile,
-} from "./fileExists";
+} from "./src/fileExists";

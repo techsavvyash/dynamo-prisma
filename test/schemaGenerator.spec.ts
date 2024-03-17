@@ -1,4 +1,4 @@
-import { Schema, createFields } from "./schemaGenerator";
+import { Schema, createFields } from "../src/schemaGenerator";
 import * as fs from "fs";
 
 // describe("createFields", () => {
