@@ -10,7 +10,6 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JsonChecks = void 0;
-var fs = require("fs");
 function JsonChecks(jsonData) {
     var enumNames = jsonData.enum.map(function (enums) { return enums.name.toLowerCase(); }) || [];
     var models = jsonData.schema.map(function (model) {
@@ -23,19 +22,6 @@ function JsonChecks(jsonData) {
         "datetime",
         "json"], models, false));
     var fieldCounts = {};
-    if (fs.existsSync("./prisma/schema.prisma")) {
-        console.log("File exists");
-        var fileContent = fs.readFileSync("./prisma/schema.prisma", "utf-8");
-        // const regex = /model\s+(\w+)\s+{/g;
-        // const matches = fileContent.matchAll(regex);
-        // for (const match of matches) {
-        //   const modelName = match[1];
-        //   console.log("\n\nPushing Model: ", modelName);
-        //   models.push(modelName);
-        // }
-    }
-    else {
-    }
     if (!hasNoDuplicates(models)) {
         console.log("Duplicates found");
         process.exit(1);

@@ -23,20 +23,6 @@ export function JsonChecks(jsonData: Schema): void {
 
   const fieldCounts: { [fieldName: string]: number } = {};
 
-  if (fs.existsSync("./prisma/schema.prisma")) {
-    console.log("File exists");
-    const fileContent = fs.readFileSync("./prisma/schema.prisma", "utf-8");
-
-    // const regex = /model\s+(\w+)\s+{/g;
-    // const matches = fileContent.matchAll(regex);
-    // for (const match of matches) {
-    //   const modelName = match[1];
-    //   console.log("\n\nPushing Model: ", modelName);
-    //   models.push(modelName);
-    // }
-  } else {
-  }
-
   if (!hasNoDuplicates(models)) {
     console.log("Duplicates found");
     process.exit(1);
