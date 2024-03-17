@@ -1,12 +1,13 @@
 {
-  "name": "dynamo-prisma",
+  "name": "@soorajk1/dynamo-prisma",
   "version": "1.0.0",
   "description": "Create Prisma Models Dynamically",
-  "main": "index.js",
+  "main": "dist/index.js",
   "module": "commonjs",
   "scripts": {
     "test": "jest",
-    "generate-schema": "tsc cli.ts && node cli.js ./demo.json",
+    "build": "tsc",
+    "generate-schema": "npm run build && node dist/cli.js ./demo.json",
     "verify-schema": "npx prisma validate"
   },
   "author": "",

@@ -160,11 +160,5 @@
       ],
       "description": "Comment model"
     }
-  ],
-  "enum": [
-    {
-      "name": "UserType",
-      "values": ["ADMIN", "USER"]
-    }
   ]
 }

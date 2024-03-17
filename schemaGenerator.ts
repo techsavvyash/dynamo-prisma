@@ -31,11 +31,11 @@ export interface Field {
   type: string;
   description: string;
   maxLength: number | null;
+  nullable: boolean;
+  unique: boolean;
   default?: string | null;
   autoincrement?: boolean;
   uuid?: boolean;
-  nullable: boolean;
-  unique: boolean;
   isId?: boolean;
   vectorEmbed?: boolean;
   embeddingAlgo?: string;

@@ -3,6 +3,17 @@ import { Schema, createModels } from "./schemaGenerator";
 import { JsonChecks } from "./checks";
 import { createGenerator, createSchema, print } from "prisma-schema-dsl";
 
+export function generateSchemaFromJson(jsonData, prismaFilePath: string) {
+  if (fs.existsSync(prismaFilePath)) {
+    console.log("File exists");
+    generateSchemaWhenFilePresent(jsonData, prismaFilePath);
+  } else {
+    console.log("Applying Checks....");
+    JsonChecks(jsonData);
+    generateIfNoSchema(jsonData);
+  }
+}
+
 export function GenerateSchemaFile(filePath: string) {
   const prismaFilePath = "./prisma/schema.prisma";
   readJsonFile(filePath)
@@ -113,7 +124,7 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
     }
   });
 }
-async function generateSchemaWhenFilePresent(
+export async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
 ) {
