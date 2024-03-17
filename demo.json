@@ -95,7 +95,7 @@
         },
         {
           "fieldName": "author",
-          "type": "User",
+          "type": "String",
           "description": "Author of the post",
           "maxLength": null,
           "default": null,

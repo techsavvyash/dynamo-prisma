@@ -30,12 +30,13 @@ export interface Field {
   fieldName: string;
   type: string;
   description: string;
-  maxLength: number | null;
+  maxLength?: number | null;
   nullable: boolean;
   unique: boolean;
   default?: string | null;
   autoincrement?: boolean;
   uuid?: boolean;
+
   isId?: boolean;
   vectorEmbed?: boolean;
   embeddingAlgo?: string;
