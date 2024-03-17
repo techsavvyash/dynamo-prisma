@@ -6,20 +6,28 @@ interface Model {
 }
 
 export function JsonChecks(jsonData: Schema): void {
-  let enumNames: string[] =
-    jsonData.enum!.map((enums) => enums.name.toLowerCase()) || [];
+  console.log("Checking for duplicates...");
+  let enumNames: string[] = [];
+  let typesDefined: string[] = [];
+  jsonData.enum
+    ? jsonData.enum!.map((enums) => enumNames.push(enums.name.toLowerCase()))
+    : [];
+  // || [];
   let models: string[] = jsonData.schema.map((model) =>
     model.schemaName.toLowerCase()
   );
-  enumNames.push(
+  typesDefined.push(
     "string",
     "int",
     "float",
     "boolean",
     "datetime",
     "json",
+    ...enumNames,
     ...models
   );
+
+  console.log(typesDefined);
 
   const fieldCounts: { [fieldName: string]: number } = {};
 
@@ -77,7 +85,7 @@ export function JsonChecks(jsonData: Schema): void {
   jsonData.schema.forEach((model) => {
     model.fields.forEach((field) => {
       if (!field.isForeignKey) {
-        if (![...enumNames].includes(field.type.toLowerCase())) {
+        if (![...typesDefined].includes(field.type.toLowerCase())) {
           console.error(
             `${field.fieldName} in model ${model.schemaName} is not a foreign key and is not of type String, Int, Float, Boolean, DateTime, Json`
           );

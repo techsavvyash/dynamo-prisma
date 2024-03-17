@@ -3,7 +3,10 @@ import { Schema, createModels } from "./schemaGenerator";
 import { JsonChecks } from "./checks";
 import { createGenerator, createSchema, print } from "prisma-schema-dsl";
 
-export function generateSchemaFromJson(jsonData, prismaFilePath: string) {
+export function generateSchemaFromJson(
+  jsonData: any,
+  prismaFilePath: string = "./prisma/schema.prisma"
+) {
   if (fs.existsSync(prismaFilePath)) {
     console.log("File exists");
     generateSchemaWhenFilePresent(jsonData, prismaFilePath);
@@ -88,7 +91,7 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
     jsonData.generator ? jsonData.generator!.binaryTargets : undefined // can be null | undefined | string[]
   );
 
-  const Enum = jsonData.enum!;
+  const Enum = jsonData.enum ? jsonData.enum! : [];
   const schema = createSchema(models, Enum, undefined, [Generator]);
   const schemaString = await print(schema);
   result = DataSource + "\n" + schemaString;
