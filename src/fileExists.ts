@@ -3,6 +3,7 @@ import { Schema, createModels } from "./schemaGenerator";
 import { JsonChecks, verifyFilePath } from "./checks";
 import { createGenerator, createSchema, print } from "prisma-schema-dsl";
 import { exec } from "child_process";
+import { spawn } from "child_process";
 
 export function generateSchemaFromJson(
   jsonData: any,
@@ -188,11 +189,10 @@ function validateAndMigrate() {
   });
 
   // TODO: DONE RUN: prisma migrate dev
-  exec("prisma migrate dev", (error, stdout, stderr) => {
-    if (error) {
-      console.error("Error executing 'prisma migrate dev':", error);
-      return;
-    }
-    console.log("Output of 'prisma migrate dev':", stdout);
+  const shell = spawn("npx", ["prisma", "migrate", "dev"], {
+    stdio: "inherit",
+  });
+  shell.on("close", (code) => {
+    console.log("[shell] terminated:", code);
   });
 }
