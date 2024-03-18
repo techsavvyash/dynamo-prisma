@@ -12,23 +12,24 @@ export function JsonChecks(
   let enumNames: string[] = [];
   let typesDefined: string[] = [];
   jsonData.enum
-    ? jsonData.enum!.map((enums) => enumNames.push(enums.name.toLowerCase()))
+    ? jsonData.enum!.map((enums) => enumNames.push(enums.name))
     : [];
   // || [];
-  let models: string[] = jsonData.schema.map((model) =>
-    model.schemaName.toLowerCase()
-  );
-  let modelNameDefinedInSchema: string[] = modelNameFromSchema.map((model) =>
-    model.toLowerCase()
+  let models: string[] = jsonData.schema.map((model) => model.schemaName);
+  let modelNameDefinedInSchema: string[] = modelNameFromSchema.map(
+    (model) => model
   );
 
   typesDefined.push(
-    "string",
-    "int",
-    "float",
-    "boolean",
-    "datetime",
-    "json",
+    "String",
+    "Int",
+    "Float",
+    "Boolean",
+    "DateTime",
+    "Decimal",
+    "Json",
+    "Bytes",
+    "Unsupported",
     ...enumNames,
     ...models,
     ...modelNameDefinedInSchema
@@ -58,7 +59,7 @@ export function JsonChecks(
         );
         // console.log("Convert it to int? (true / false) (default: false)");
         // process.stdin.once("data", (input) => {
-        //   const convertToInt = input.toString().trim().toLowerCase() === "true";
+        //   const convertToInt = input.toString().trim() === "true";
         //   if (!convertToInt) {
         process.exit(1);
         //   }
@@ -78,9 +79,17 @@ export function JsonChecks(
   jsonData.schema.forEach((model) => {
     model.fields.forEach((field) => {
       if (!field.isForeignKey) {
-        if (![...typesDefined].includes(field.type.toLowerCase())) {
+        if (![...typesDefined].includes(field.type)) {
           console.error(
-            `${field.fieldName} in model ${model.schemaName} is not a foreign key and is not of type String, Int, Float, Boolean, DateTime, Json`
+            `${field.fieldName} in model ${model.schemaName} is not a foreign key and not of type: "String",
+            "Int",
+            "Float",
+            "Boolean",
+            "DateTime",
+            "Decimal",
+            "Json",
+            "Bytes",
+            "Unsupported" or any other supported types`
           );
           console.error("model: ", field);
           process.exit(1);
@@ -94,10 +103,10 @@ function hasNoDuplicates(result: string[]): boolean {
   const seen: { [key: string]: boolean } = {};
 
   for (const item of result) {
-    if (seen[item.toLowerCase()]) {
+    if (seen[item]) {
       return false;
     }
-    seen[item.toLowerCase()] = true;
+    seen[item] = true;
   }
 
   return true;
