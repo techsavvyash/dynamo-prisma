@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import { Schema, createModels } from "./schemaGenerator";
-import { JsonChecks } from "./checks";
+import { JsonChecks, verifyFilePath } from "./checks";
 import { createGenerator, createSchema, print } from "prisma-schema-dsl";
 import { exec } from "child_process";
 
@@ -8,6 +8,9 @@ export function generateSchemaFromJson(
   jsonData: any,
   prismaFilePath: string = "./prisma/schema.prisma"
 ) {
+  if (!verifyFilePath(prismaFilePath)) {
+    throw new Error("File cannot have '-' in between its name");
+  }
   if (fs.existsSync(prismaFilePath)) {
     console.log("File exists");
 
@@ -144,6 +147,9 @@ export async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
 ) {
+  if (!verifyFilePath(prismaFilePath)) {
+    throw new Error("File cannot have '-' in between its name");
+  }
   const FileData = fs.readFileSync(prismaFilePath, "utf8");
   const models: any[] = createModels(jsonData.schema);
   console.log("Model generated");

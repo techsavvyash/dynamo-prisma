@@ -111,3 +111,11 @@ function hasNoDuplicates(result: string[]): boolean {
 
   return true;
 }
+
+export function verifyFilePath(filePath: string): boolean {
+  if (filePath.includes("-")) {
+    return false;
+  } else {
+    return true;
+  }
+}
