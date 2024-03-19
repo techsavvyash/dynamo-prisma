@@ -140,7 +140,10 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
       console.error("Error writing Prisma schema:", err);
     } else {
       console.log("Prisma schema generated successfully!");
-      validateAndMigrate();
+      let migrateModels: string[] = jsonData.schema.map(
+        (model) => model.schemaName
+      );
+      validateAndMigrate(migrateModels);
     }
   });
 }
@@ -173,12 +176,15 @@ export async function generateSchemaWhenFilePresent(
       console.error("Error writing Prisma schema:", err);
     } else {
       console.log("Prisma schema generated successfully!");
-      validateAndMigrate();
+      let migrateModels: string[] = jsonData.schema.map(
+        (model) => model.schemaName
+      );
+      validateAndMigrate(migrateModels);
     }
   });
 }
 
-function validateAndMigrate() {
+function validateAndMigrate(migrateModels: string[]) {
   // TODO: DONE RUN: npx prisma validate
   exec("npx prisma validate", (error, stdout, stderr) => {
     if (error) {
@@ -189,9 +195,13 @@ function validateAndMigrate() {
   });
 
   // TODO: DONE RUN: prisma migrate dev
-  const shell = spawn("npx", ["prisma", "migrate", "dev"], {
-    stdio: "inherit",
-  });
+  const shell = spawn(
+    "npx",
+    ["prisma", "migrate", "dev", "--name", ...migrateModels],
+    {
+      stdio: "inherit",
+    }
+  );
   shell.on("close", (code) => {
     console.log("[shell] terminated:", code);
   });
