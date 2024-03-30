@@ -91,7 +91,7 @@ export function createFields(fields: Field[]): any[] {
         //   ? ScalarType.String
         //   :
         fieldData.type as ScalarType,
-        fieldData.isList, //isList boolean | undefined
+        fieldData.isList || undefined, //isList boolean | undefined
         !fieldData.nullable || false, //isRequired boolean | undefined
         fieldData.isId ? fieldData.isId : fieldData.unique || false,
         fieldData.isId || false,
@@ -100,9 +100,9 @@ export function createFields(fields: Field[]): any[] {
           ? { callee: AUTO_INCREMENT }
           : fieldData.isId && fieldData.uuid
           ? { callee: UUID }
-          : fieldData.default, // default values SaclarFeildDefault | undefined
+          : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
         undefined, // documentation string | undefined
-        fieldData.isForeignKey, // isForeignKey boolean | undefined
+        fieldData.isForeignKey || false, // isForeignKey boolean | undefined
         undefined // attributes in string | string[] | undefined
       )
     );
