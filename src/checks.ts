@@ -1,4 +1,4 @@
-import { Schema, Field } from "./schemaGenerator";
+import { Schema } from "./dynamoPrisma.types";
 
 interface Model {
   schemaName: string;
@@ -8,6 +8,7 @@ export function JsonChecks(
   jsonData: Schema,
   modelNameFromSchema: string[]
 ): void {
+  ensureEachModelHasPrimaryKey(jsonData);
   console.log("Checking for duplicates...");
   let enumNames: string[] = [];
   let typesDefined: string[] = [];
@@ -118,4 +119,14 @@ export function verifyFilePath(filePath: string): boolean {
   } else {
     return true;
   }
+}
+
+function ensureEachModelHasPrimaryKey(jsonData: Schema) {
+  jsonData.schema.forEach((model) => {
+    const primaryKeyFields = model.fields.filter((field) => field.isId);
+    if (primaryKeyFields.length === 0) {
+      console.error(`Model ${model.schemaName} does not have a primary key`);
+      process.exit(1);
+    }
+  });
 }

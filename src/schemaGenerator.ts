@@ -14,44 +14,7 @@ import {
   ScalarType,
   UUID,
 } from "prisma-schema-dsl-types";
-
-export interface Field {
-  fieldName: string;
-  type: string;
-  description: string;
-  maxLength?: number | null;
-  nullable: boolean;
-  unique: boolean;
-  default?: string | null;
-  autoincrement?: boolean;
-  uuid?: boolean;
-
-  isId?: boolean;
-  vectorEmbed?: boolean;
-  embeddingAlgo?: string;
-  isForeignKey?: boolean;
-  isList?: boolean;
-}
-
-export interface Schema {
-  schema: [{ schemaName: string; fields: Field[]; description: string }];
-  dataSource?: {
-    name: string;
-    provider: DataSourceProvider;
-    url: {
-      url: string;
-      fromEnv: DataSourceURLEnv;
-      // fromEnv: DataSourceURLEnv;
-    };
-  };
-  enum?: Enum[];
-  generator?: {
-    generatorName: string;
-    provider: string;
-    output: string;
-    binaryTargets: string[];
-  };
-}
+import { Field, Schema } from "./dynamoPrisma.types";
 
 export function createModels(schema: Schema["schema"]): any[] {
   const models: any[] = [];
@@ -91,7 +54,7 @@ export function createFields(fields: Field[]): any[] {
         //   ? ScalarType.String
         //   :
         fieldData.type as ScalarType,
-        fieldData.isList, //isList boolean | undefined
+        fieldData.isList || undefined, //isList boolean | undefined
         !fieldData.nullable || false, //isRequired boolean | undefined
         fieldData.isId ? fieldData.isId : fieldData.unique || false,
         fieldData.isId || false,
@@ -100,9 +63,9 @@ export function createFields(fields: Field[]): any[] {
           ? { callee: AUTO_INCREMENT }
           : fieldData.isId && fieldData.uuid
           ? { callee: UUID }
-          : fieldData.default, // default values SaclarFeildDefault | undefined
+          : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
         undefined, // documentation string | undefined
-        fieldData.isForeignKey, // isForeignKey boolean | undefined
+        fieldData.isForeignKey || false, // isForeignKey boolean | undefined
         undefined // attributes in string | string[] | undefined
       )
     );
