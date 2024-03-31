@@ -1,4 +1,4 @@
-import { Schema, Field } from "./schemaGenerator";
+import { Schema } from "./dynamoPrisma.types";
 
 interface Model {
   schemaName: string;

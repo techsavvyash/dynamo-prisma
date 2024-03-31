@@ -1,9 +1,10 @@
 import * as fs from "fs";
-import { Schema, createModels } from "./schemaGenerator";
+import { createModels } from "./schemaGenerator";
 import { JsonChecks, verifyFilePath } from "./checks";
 import { createGenerator, createSchema, print } from "prisma-schema-dsl";
 import { exec } from "child_process";
 import { spawn } from "child_process";
+import { Schema } from "./dynamoPrisma.types";
 
 export function generateSchemaFromJson(
   jsonData: any,
@@ -108,16 +109,16 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
   // console.log("DataSource generated");
   // // console.log(DataSource);
 
-  const DataSource: string = `datasource db {\n provider = "postgresql"\n url = env("DATABASE_URL")\n}`;
+  const DataSource: string = `datasource db {\n provider = "postgresql"\n url = env("DATABASE_URL")\nextensions=[vector,pg_trgm]\n}`;
 
   var result: string;
-
-  const Generator = createGenerator(
-    jsonData.generator ? jsonData.generator!.generatorName : "client",
-    jsonData.generator ? jsonData.generator!.provider : "prisma-client-js",
-    jsonData.generator ? jsonData.generator!.output : undefined, // can be null | undefined | string( // ? Example Value: "node_modules/@prisma/client")
-    jsonData.generator ? jsonData.generator!.binaryTargets : undefined // can be null | undefined | string[]
-  );
+  const Generator: string = `generator client {\n provider = "prisma-client-js"\n previewFeatures=["postgresqlExtensions", "views"] \n}`;
+  // const Generator = createGenerator(
+  //   jsonData.generator ? jsonData.generator!.generatorName : "client",
+  //   jsonData.generator ? jsonData.generator!.provider : "prisma-client-js",
+  //   jsonData.generator ? jsonData.generator!.output : undefined, // can be null | undefined | string( // ? Example Value: "node_modules/@prisma/client")
+  //   jsonData.generator ? jsonData.generator!.binaryTargets : undefined // can be null | undefined | string[]
+  // );
 
   console.log("Generator generated");
   jsonData.enum
@@ -125,9 +126,9 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
     : console.log("Enum does not exist");
   const Enum = jsonData.enum ? jsonData.enum! : [];
   console.log("Enum generated");
-  const schema = createSchema(models, Enum, undefined, [Generator]);
+  const schema = createSchema(models, Enum, undefined, undefined);
   const schemaString = await print(schema);
-  result = DataSource + "\n" + schemaString;
+  result = Generator + "\n" + DataSource + "\n" + schemaString;
 
   // fs.existsSync("./prisma/schema.prisma") // ? Check if prisma file exists, if yes, then append
   // console.log(result);
