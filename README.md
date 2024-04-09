@@ -14,7 +14,7 @@ npm link
 ### using npm
 
 ```bash
-npm install @soorajk1/dynamo-prisma
+npm install @techsavvyash/dynamo-prisma
 ```
 
 ## Usage
