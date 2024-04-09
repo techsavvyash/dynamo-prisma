@@ -10,7 +10,7 @@ Follow guide given in [README.md](../README.md)
 
   - `jsonData: Schema` - JSON as per schema model which is defined in [JSON Schema](./schema.md)
 
-  - OPTIONAL `prismaFilePath?: string` - Path of the prisma schema file. If file is present, it will append the new schema to the existing schema. If file is not present, it will create a new schema file.
+  - OPTIONAL `prismaFilePath?: string` - Path of the prisma schema file. If file is present, it will append the new schema to the existing schema. If file is not present, it will create a new schema file. Default value is `./prisma/schema.prisma`
 
   Returns: {status: boolean, message: string, error: string}
 
