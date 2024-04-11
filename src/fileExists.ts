@@ -61,7 +61,7 @@ export async function generatePrismaSchema(
  * @param filePath - The path of the JSON file to read.
  * @returns A Promise that resolves to the parsed JSON data.
  */
-export function readJsonFile(filePath: string): Promise<Schema> {
+function readJsonFile(filePath: string): Promise<Schema> {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, "utf8", (err, data) => {
       if (err) {
@@ -87,7 +87,7 @@ export function readJsonFile(filePath: string): Promise<Schema> {
  * @param jsonData The JSON data containing the schema information.
  * @returns A promise that resolves to an object with the status, message, and error properties.
  */
-export async function generateIfNoSchema(
+async function generateIfNoSchema(
   jsonData: Schema
 ): Promise<{ status: boolean; message?: string; error?: string }> {
   const models: any[] = createModels(jsonData.schema);
@@ -139,7 +139,7 @@ export async function generateIfNoSchema(
  * @param prismaFilePath - The path to the Prisma file.
  * @returns An object with the status and message indicating the result of the operation.
  */
-export async function generateSchemaWhenFilePresent(
+async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
 ) {

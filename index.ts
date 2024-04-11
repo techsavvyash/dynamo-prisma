@@ -1,6 +1,1 @@
-export {
-  generateSchemaFromJson,
-  generateSchemaWhenFilePresent,
-  generateIfNoSchema,
-  GenerateSchemaFile,
-} from "./src/fileExists";
+export { generatePrismaSchema } from "./src/fileExists";
