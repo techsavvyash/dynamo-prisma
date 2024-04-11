@@ -1,4 +1,4 @@
-import { GenerateSchemaFile } from "./fileExists";
+import { generatePrismaSchema } from "./fileExists";
 
 export function main(argv: string[]) {
   console.warn(argv);
@@ -8,7 +8,7 @@ export function main(argv: string[]) {
   }
 
   const filePath = argv[2];
-  GenerateSchemaFile(filePath);
+  generatePrismaSchema(filePath);
   return filePath;
 }
 

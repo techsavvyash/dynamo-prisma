@@ -1,10 +1,16 @@
 import * as fs from "fs";
 import { createModels } from "./schemaGenerator";
-import { JsonChecks, verifyFilePath } from "./checks";
+import { JsonChecks } from "./checks";
 import { createSchema, print } from "prisma-schema-dsl";
 import { exec } from "child_process";
 import { spawn } from "child_process";
 import { Schema } from "./types.dynamoPrisma";
+
+interface returnTypes {
+  status: boolean;
+  message?: string;
+  error?: string;
+}
 
 /**
  * Generates the Prisma schema file from JSON data.
@@ -13,12 +19,16 @@ import { Schema } from "./types.dynamoPrisma";
  * @param prismaFilePath - The path to the Prisma schema file. Defaults to "./prisma/schema.prisma".
  * @returns An object with the status and message if the file path is invalid, or the generated schema output.
  */
-export function generatePrismaSchema(
-  jsonData: any,
+export async function generatePrismaSchema(
+  jsonData: Schema | String,
   prismaFilePath: string = "./prisma/schema.prisma"
-) {
-  if (!verifyFilePath(prismaFilePath)) {
-    throw new Error("File cannot have '-' in between its name");
+): Promise<Promise<returnTypes> | returnTypes> {
+  var JsonData: Schema;
+  if (typeof jsonData === "string") {
+    const parsedJsonData = (await readJsonFile(jsonData)) as Schema;
+    JsonData = parsedJsonData;
+  } else {
+    JsonData = jsonData as Schema;
   }
   if (fs.existsSync(prismaFilePath)) {
     console.log("File exists");
@@ -26,58 +36,24 @@ export function generatePrismaSchema(
     const fileData = fs.readFileSync(prismaFilePath, "utf8");
     const modelRegex = /model\s+(\w+)\s+{/g;
     const models: string[] = [];
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = modelRegex.exec(fileData)) !== null) {
       const modelName = match[1];
       models.push(modelName);
     }
 
-    JsonChecks(jsonData, models);
-    generateSchemaWhenFilePresent(jsonData, prismaFilePath);
+    JsonChecks(JsonData, models);
+    const output: Promise<returnTypes> = generateSchemaWhenFilePresent(
+      JsonData,
+      prismaFilePath
+    );
+    return output;
   } else {
     console.log("Applying Checks....");
-    JsonChecks(jsonData, []);
-    const output = generateIfNoSchema(jsonData);
+    JsonChecks(JsonData, []);
+    const output: Promise<returnTypes> = generateIfNoSchema(JsonData);
     return output;
   }
-}
-
-/**
- * Generates the schema file based on the provided file path.
- * If the schema file already exists, it reads the file, extracts the model names,
- * and performs JSON checks against the provided data.
- * If the schema file does not exist, it applies checks against the provided data
- * and generates the schema file if no schema is present.
- * @param filePath The file path to read the JSON data from.
- */
-export function GenerateSchemaFile(filePath: string) {
-  const prismaFilePath = "./prisma/schema.prisma";
-  readJsonFile(filePath)
-    .then(async (jsonData: Schema) => {
-      if (fs.existsSync(prismaFilePath)) {
-        console.log("File exists");
-
-        const fileData = fs.readFileSync(prismaFilePath, "utf8");
-        const modelRegex = /model\s+(\w+)\s+{/g;
-        const models: string[] = [];
-        let match;
-        while ((match = modelRegex.exec(fileData)) !== null) {
-          const modelName = match[1];
-          models.push(modelName);
-        }
-        console.log("Models:", models);
-
-        JsonChecks(jsonData, models);
-        generateSchemaWhenFilePresent(jsonData, prismaFilePath);
-      } else {
-        console.log("Applying Checks....");
-        JsonChecks(jsonData, []);
-        generateIfNoSchema(jsonData);
-      }
-    })
-    .catch((err) => {
-      console.error("Error reading file", err);
-    });
 }
 
 /**
@@ -163,9 +139,13 @@ export async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
 ) {
-  if (!verifyFilePath(prismaFilePath)) {
-    throw new Error("File cannot have '-' in between its name");
-  }
+  // if (!verifyFilePath(prismaFilePath)) {
+  //   return {
+  //     status: false,
+  //     message: "File cannot have '-' in between its name",
+  //   };
+  // }
+
   const FileData = fs.readFileSync(prismaFilePath, "utf8");
   const models: any[] = createModels(jsonData.schema);
   console.log("Model generated");
