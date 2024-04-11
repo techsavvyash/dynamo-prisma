@@ -1,21 +1,30 @@
-import { Schema } from "./dynamoPrisma.types";
+import { Schema } from "./types.dynamoPrisma";
 
 interface Model {
   schemaName: string;
 }
 
+/**
+ * Performs various checks on the provided JSON data and model names.
+ * @param jsonData - The JSON data to be checked.
+ * @param modelNameFromSchema - An array of model names obtained from the schema.
+ */
 export function JsonChecks(
   jsonData: Schema,
   modelNameFromSchema: string[]
-): void {
-  ensureEachModelHasPrimaryKey(jsonData);
+): boolean {
+  // ? Check if the JSON data has primary Key in every model
+  if (!ensureEachModelHasPrimaryKey(jsonData)) {
+    console.error("Primary key is missing in some models");
+    return false;
+  }
+
   console.log("Checking for duplicates...");
   let enumNames: string[] = [];
   let typesDefined: string[] = [];
   jsonData.enum
     ? jsonData.enum!.map((enums) => enumNames.push(enums.name))
     : [];
-  // || [];
   let models: string[] = jsonData.schema.map((model) => model.schemaName);
   let modelNameDefinedInSchema: string[] = modelNameFromSchema.map(
     (model) => model
@@ -45,7 +54,6 @@ export function JsonChecks(
     process.exit(1);
   }
 
-  // Check if the autoincrement | uuid is true, and type to be appropiate
   jsonData.schema.forEach((model) => {
     model.fields.forEach((field) => {
       if (field.autoincrement && field.uuid) {
@@ -58,14 +66,7 @@ export function JsonChecks(
         console.log(
           `Autoincrement field ${field.fieldName} in model ${model.schemaName} is not of type Int`
         );
-        // console.log("Convert it to int? (true / false) (default: false)");
-        // process.stdin.once("data", (input) => {
-        //   const convertToInt = input.toString().trim() === "true";
-        //   if (!convertToInt) {
         process.exit(1);
-        //   }
-        //   console.log("Converting to Int...");
-        // });
       }
       if (field.uuid && field.type !== "String") {
         console.log(
@@ -76,7 +77,6 @@ export function JsonChecks(
     });
   });
 
-  // check if foreign key is false, and type is not equal to String, Int, Float, Boolean, DateTime, Json
   jsonData.schema.forEach((model) => {
     model.fields.forEach((field) => {
       if (!field.isForeignKey) {
@@ -93,13 +93,20 @@ export function JsonChecks(
             "Unsupported" or any other supported types`
           );
           console.error("model: ", field);
-          process.exit(1);
+          return false;
         }
       }
     });
   });
+
+  return true;
 }
 
+/**
+ * Checks if an array of strings has any duplicates.
+ * @param result - The array of strings to check for duplicates.
+ * @returns A boolean value indicating whether the array has duplicates (false) or not (true).
+ */
 function hasNoDuplicates(result: string[]): boolean {
   const seen: { [key: string]: boolean } = {};
 
@@ -113,6 +120,12 @@ function hasNoDuplicates(result: string[]): boolean {
   return true;
 }
 
+/**
+ * Verifies if the given file path is valid.
+ *
+ * @param filePath - The file path to be verified.
+ * @returns A boolean value indicating if the file path is valid or not.
+ */
 export function verifyFilePath(filePath: string): boolean {
   if (filePath.includes("-")) {
     return false;
@@ -121,12 +134,20 @@ export function verifyFilePath(filePath: string): boolean {
   }
 }
 
+/**
+ * Ensures that each model in the provided JSON data has a primary key.
+ * If a model does not have a primary key, an error message is logged and the process exits with code 1.
+ *
+ * @param jsonData - The JSON data containing the schema information.
+ */
 function ensureEachModelHasPrimaryKey(jsonData: Schema) {
   jsonData.schema.forEach((model) => {
     const primaryKeyFields = model.fields.filter((field) => field.isId);
     if (primaryKeyFields.length === 0) {
       console.error(`Model ${model.schemaName} does not have a primary key`);
+      return false;
       process.exit(1);
     }
   });
+  return true;
 }

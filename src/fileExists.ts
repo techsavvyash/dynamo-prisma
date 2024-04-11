@@ -1,12 +1,19 @@
 import * as fs from "fs";
 import { createModels } from "./schemaGenerator";
 import { JsonChecks, verifyFilePath } from "./checks";
-import { createGenerator, createSchema, print } from "prisma-schema-dsl";
+import { createSchema, print } from "prisma-schema-dsl";
 import { exec } from "child_process";
 import { spawn } from "child_process";
-import { Schema } from "./dynamoPrisma.types";
+import { Schema } from "./types.dynamoPrisma";
 
-export function generateSchemaFromJson(
+/**
+ * Generates the Prisma schema file from JSON data.
+ *
+ * @param jsonData - The JSON data to generate the schema from.
+ * @param prismaFilePath - The path to the Prisma schema file. Defaults to "./prisma/schema.prisma".
+ * @returns An object with the status and message if the file path is invalid, or the generated schema output.
+ */
+export function generatePrismaSchema(
   jsonData: any,
   prismaFilePath: string = "./prisma/schema.prisma"
 ) {
@@ -39,6 +46,14 @@ export function generateSchemaFromJson(
   }
 }
 
+/**
+ * Generates the schema file based on the provided file path.
+ * If the schema file already exists, it reads the file, extracts the model names,
+ * and performs JSON checks against the provided data.
+ * If the schema file does not exist, it applies checks against the provided data
+ * and generates the schema file if no schema is present.
+ * @param filePath The file path to read the JSON data from.
+ */
 export function GenerateSchemaFile(filePath: string) {
   const prismaFilePath = "./prisma/schema.prisma";
   readJsonFile(filePath)
@@ -57,7 +72,7 @@ export function GenerateSchemaFile(filePath: string) {
         console.log("Models:", models);
 
         JsonChecks(jsonData, models);
-        // generateSchemaWhenFilePresent(jsonData, prismaFilePath);
+        generateSchemaWhenFilePresent(jsonData, prismaFilePath);
       } else {
         console.log("Applying Checks....");
         JsonChecks(jsonData, []);
@@ -69,6 +84,11 @@ export function GenerateSchemaFile(filePath: string) {
     });
 }
 
+/**
+ * Reads a JSON file from the specified file path and returns a Promise that resolves to the parsed JSON data.
+ * @param filePath - The path of the JSON file to read.
+ * @returns A Promise that resolves to the parsed JSON data.
+ */
 export function readJsonFile(filePath: string): Promise<Schema> {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, "utf8", (err, data) => {
@@ -90,42 +110,21 @@ export function readJsonFile(filePath: string): Promise<Schema> {
   });
 }
 
+/**
+ * Generates a Prisma schema file based on the provided JSON data.
+ * @param jsonData The JSON data containing the schema information.
+ * @returns A promise that resolves to an object with the status, message, and error properties.
+ */
 export async function generateIfNoSchema(
   jsonData: Schema
 ): Promise<{ status: boolean; message?: string; error?: string }> {
   const models: any[] = createModels(jsonData.schema);
   console.log("Model generated");
-  // console.log(models);
-  // console.warn(
-  //   "URL is ENV",
-  //   isDataSourceURLEnv(jsonData.dataSource!.urlEnv)
-  // );           // ! COMES OUT FALSE
-
-  // const dbUrl = env("DATABASE_URL");
-  // const DataSource = createDataSource(
-  //   jsonData.dataSource?.name ? jsonData.dataSource!.name : "db",
-  //   jsonData.dataSource!.provider || DataSourceProvider.PostgreSQL,
-  //   dbUrl
-  //   // jsonData.dataSource?.url
-  //   //   ? jsonData.dataSource!.url.url
-  //   //     ? jsonData.dataSource!.url.url
-  //   //     : // : (env(`${jsonData.dataSource!.url.fromEnv}"`) as unknown as string)
-  //   //       `${jsonData.dataSource!.url.fromEnv.name}`
-  //   //   : "localhost:5432"
-  // );
-  // console.log("DataSource generated");
-  // // console.log(DataSource);
 
   const DataSource: string = `datasource db {\n provider = "postgresql"\n url = env("DATABASE_URL")\nextensions=[vector,pg_trgm]\n}`;
 
   var result: string;
   const Generator: string = `generator client {\n provider = "prisma-client-js"\n previewFeatures=["postgresqlExtensions", "views"] \n}`;
-  // const Generator = createGenerator(
-  //   jsonData.generator ? jsonData.generator!.generatorName : "client",
-  //   jsonData.generator ? jsonData.generator!.provider : "prisma-client-js",
-  //   jsonData.generator ? jsonData.generator!.output : undefined, // can be null | undefined | string( // ? Example Value: "node_modules/@prisma/client")
-  //   jsonData.generator ? jsonData.generator!.binaryTargets : undefined // can be null | undefined | string[]
-  // );
 
   console.log("Generator generated");
   jsonData.enum
@@ -137,10 +136,7 @@ export async function generateIfNoSchema(
   const schemaString = await print(schema);
   result = Generator + "\n" + DataSource + "\n" + schemaString;
 
-  // fs.existsSync("./prisma/schema.prisma") // ? Check if prisma file exists, if yes, then append
-  // console.log(result);
   console.warn("schema generated");
-  // console.log(schema);
 
   fs.mkdirSync("./prisma", { recursive: true });
   fs.writeFile("./prisma/schema.prisma", result, (err) => {
@@ -164,6 +160,13 @@ export async function generateIfNoSchema(
     message: "Prisma schema generated successfully!",
   };
 }
+
+/**
+ * Generates a Prisma schema file when a file is present.
+ * @param jsonData - The JSON data containing the schema.
+ * @param prismaFilePath - The path to the Prisma file.
+ * @returns An object with the status and message indicating the result of the operation.
+ */
 export async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
@@ -213,6 +216,11 @@ export async function generateSchemaWhenFilePresent(
   };
 }
 
+/**
+ * Validates and migrates the Prisma models.
+ * @param migrateModels - An array of model names to be migrated.
+ * @returns An object with the status and message of the executed commands.
+ */
 function validateAndMigrate(migrateModels: string[]) {
   // TODO: DONE RUN: npx prisma validate
   exec("npx prisma validate", (error, stdout, stderr) => {
