@@ -140,7 +140,7 @@ export function verifyFilePath(filePath: string): boolean {
  *
  * @param jsonData - The JSON data containing the schema information.
  */
-function ensureEachModelHasPrimaryKey(jsonData: Schema) {
+function ensureEachModelHasPrimaryKey(jsonData: Schema): boolean {
   jsonData.schema.forEach((model) => {
     const primaryKeyFields = model.fields.filter((field) => field.isId);
     if (primaryKeyFields.length === 0) {

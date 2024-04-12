@@ -22,7 +22,7 @@ interface returnTypes {
 export async function generatePrismaSchema(
   jsonData: Schema | String,
   prismaFilePath: string = "./prisma/schema.prisma"
-): Promise<Promise<returnTypes> | returnTypes> {
+): Promise<returnTypes> {
   var JsonData: Schema;
   if (typeof jsonData === "string") {
     const parsedJsonData = (await readJsonFile(jsonData)) as Schema;
