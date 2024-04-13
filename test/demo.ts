@@ -1,6 +1,7 @@
-import { generateSchemaFromJson } from "../src/fileExists";
+import { generatePrismaSchema } from "../src/fileExists";
+import { Schema } from "../src/types.dynamoPrisma";
 
-const JSONData = {
+const jsonData: Schema = {
   schema: [
     {
       schemaName: "User",
@@ -64,105 +65,9 @@ const JSONData = {
       ],
       description: "User model",
     },
-    {
-      schemaName: "Post",
-      fields: [
-        {
-          fieldName: "id",
-          type: "Int",
-          description: "ID of the post",
-          maxLength: null,
-          nullable: false,
-          isId: true,
-          unique: true,
-          autoincrement: true,
-        },
-        {
-          fieldName: "title",
-          type: "String",
-          description: "Title of the post",
-          maxLength: null,
-          default: null,
-          nullable: false,
-          unique: false,
-        },
-        {
-          fieldName: "content",
-          type: "String",
-          description: "Content of the post",
-          maxLength: null,
-          default: null,
-          nullable: false,
-          unique: false,
-        },
-        {
-          fieldName: "author",
-          type: "String",
-          description: "Author of the post",
-          maxLength: null,
-          default: null,
-          nullable: false,
-          unique: false,
-        },
-        {
-          fieldName: "comments",
-          type: "Comment",
-          description: "Comments associated with the post",
-          maxLength: null,
-          default: null,
-          nullable: true,
-          unique: false,
-        },
-      ],
-      description: "Post model",
-    },
-    {
-      schemaName: "Comment",
-      fields: [
-        {
-          fieldName: "id",
-          type: "String",
-          description: "ID of the comment",
-          maxLength: null,
-          default: null,
-          nullable: false,
-          unique: false,
-          isId: true,
-        },
-        {
-          fieldName: "content",
-          type: "String",
-          description: "Content of the comment",
-          maxLength: null,
-          default: null,
-          nullable: false,
-          unique: false,
-        },
-        {
-          fieldName: "author",
-          type: "User",
-          description: "Author of the comment",
-          maxLength: null,
-          default: null,
-          nullable: false,
-          unique: false,
-        },
-        {
-          fieldName: "post",
-          type: "String",
-          description: "Post associated with the comment",
-          maxLength: null,
-          default: null,
-          nullable: false,
-          unique: false,
-          isForeignKey: true,
-          vectorEmbed: true,
-          embeddingAlgo: "whatever",
-        },
-      ],
-      description: "Comment model",
-    },
   ],
 };
 
-generateSchemaFromJson(JSONData);
+const output = generatePrismaSchema(jsonData);
+
+console.log(output);

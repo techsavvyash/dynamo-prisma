@@ -63,13 +63,13 @@ export function JsonChecks(
         process.exit(1);
       }
       if (field.autoincrement && field.type !== "Int") {
-        console.log(
+        console.warn(
           `Autoincrement field ${field.fieldName} in model ${model.schemaName} is not of type Int`
         );
         process.exit(1);
       }
       if (field.uuid && field.type !== "String") {
-        console.log(
+        console.warn(
           `UUID field ${field.fieldName} in model ${model.schemaName} is not of type String`
         );
         process.exit(1);
@@ -92,7 +92,6 @@ export function JsonChecks(
             "Bytes",
             "Unsupported" or any other supported types`
           );
-          console.error("model: ", field);
           return false;
         }
       }
@@ -141,13 +140,18 @@ export function verifyFilePath(filePath: string): boolean {
  * @param jsonData - The JSON data containing the schema information.
  */
 function ensureEachModelHasPrimaryKey(jsonData: Schema): boolean {
-  jsonData.schema.forEach((model) => {
-    const primaryKeyFields = model.fields.filter((field) => field.isId);
-    if (primaryKeyFields.length === 0) {
-      console.error(`Model ${model.schemaName} does not have a primary key`);
-      return false;
-      process.exit(1);
-    }
-  });
+  // console.log(jsonData);
+  jsonData.schema.length > 0
+    ? jsonData.schema.forEach((model) => {
+        const primaryKeyFields = model.fields.filter((field) => field.unique);
+        if (primaryKeyFields.length === 0) {
+          console.error(
+            `Model ${model.schemaName} does not have a primary key`
+          );
+          return false;
+          process.exit(1);
+        }
+      })
+    : console.log("Wrong format, ", typeof jsonData);
   return true;
 }
