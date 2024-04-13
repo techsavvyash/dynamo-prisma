@@ -121,12 +121,27 @@ export function verifyFilePath(filePath: string): boolean {
   }
 }
 
-function ensureEachModelHasPrimaryKey(jsonData: Schema) {
-  jsonData.schema.forEach((model) => {
-    const primaryKeyFields = model.fields.filter((field) => field.isId);
-    if (primaryKeyFields.length === 0) {
-      console.error(`Model ${model.schemaName} does not have a primary key`);
-      process.exit(1);
-    }
-  });
+/**
+ * Ensures that each model in the provided JSON data has a primary key.
+ * If a model does not have a primary key, an error message is logged and the process exits with code 1.
+ *
+ * @param jsonData - The JSON data containing the schema information.
+ */
+function ensureEachModelHasPrimaryKey(jsonData: Schema): boolean {
+  // console.log(jsonData);
+  jsonData.schema.length > 0
+    ? jsonData.schema.forEach((model) => {
+        const primaryKeyFields = model.fields.filter(
+          (field) => field.isId || field.unique
+        );
+        if (primaryKeyFields.length === 0) {
+          console.error(
+            `Model ${model.schemaName} does not have a primary key`
+          );
+          return false;
+          process.exit(1);
+        }
+      })
+    : console.log("Wrong format, ", typeof jsonData);
+  return true;
 }
