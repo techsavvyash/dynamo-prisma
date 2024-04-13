@@ -119,7 +119,8 @@ async function generateIfNoSchema(
       let migrateModels: string[] = jsonData.schema.map(
         (model) => model.schemaName
       );
-      validateAndMigrate(migrateModels);
+      const output: returnTypes = validateAndMigrate(migrateModels);
+      return output;
     }
   });
 
@@ -171,7 +172,8 @@ async function generateSchemaWhenFilePresent(
       let migrateModels: string[] = jsonData.schema.map(
         (model) => model.schemaName
       );
-      validateAndMigrate(migrateModels);
+      const output: returnTypes = validateAndMigrate(migrateModels);
+      return output;
     }
   });
 }
@@ -181,7 +183,7 @@ async function generateSchemaWhenFilePresent(
  * @param migrateModels - An array of model names to be migrated.
  * @returns An object with the status and message of the executed commands.
  */
-function validateAndMigrate(migrateModels: string[]) {
+function validateAndMigrate(migrateModels: string[]): returnTypes {
   // TODO: DONE RUN: npx prisma validate
   exec("npx prisma validate", (error, stdout, stderr) => {
     if (error) {
