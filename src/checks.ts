@@ -143,7 +143,9 @@ function ensureEachModelHasPrimaryKey(jsonData: Schema): boolean {
   // console.log(jsonData);
   jsonData.schema.length > 0
     ? jsonData.schema.forEach((model) => {
-        const primaryKeyFields = model.fields.filter((field) => field.unique);
+        const primaryKeyFields = model.fields.filter(
+          (field) => field.isId || field.unique
+        );
         if (primaryKeyFields.length === 0) {
           console.error(
             `Model ${model.schemaName} does not have a primary key`
