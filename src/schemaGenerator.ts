@@ -25,7 +25,7 @@ export function createFields(fields: Field[]): any[] {
   const result: any[] = [];
   for (const fieldData of fields) {
     fieldData.isId && fieldData.autoincrement
-      ? console.error("Cannot have String in autoincrement")
+      ? console.warn("Cannot have String in autoincrement")
       : null;
 
     result.push(

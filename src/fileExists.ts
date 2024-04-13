@@ -65,7 +65,7 @@ function readJsonFile(filePath: string): Promise<Schema> {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, "utf8", (err, data) => {
       if (err) {
-        console.error("Failed to read File. ERROR: ", err);
+        console.error(`Failed to read File. ERROR: ${err}`);
         reject(err);
         return;
       }
@@ -75,7 +75,7 @@ function readJsonFile(filePath: string): Promise<Schema> {
         console.log("JSON Parsed");
         resolve(jsonData);
       } catch (error) {
-        console.error("Failed to parse. ERROR: ", err);
+        console.error(`Failed to parse. ERROR: ${err}`);
         reject(error);
       }
     });
@@ -100,8 +100,8 @@ async function generateIfNoSchema(
 
   console.log("Generator generated");
   jsonData.enum
-    ? console.log("Enum exists")
-    : console.log("Enum does not exist");
+    ? console.warn("Enum exists")
+    : console.warn("Enum does not exist");
   const Enum = jsonData.enum ? jsonData.enum! : [];
   console.log("Enum generated");
   const schema = createSchema(models, Enum, undefined, undefined);
