@@ -7,7 +7,7 @@ const jsonData: Schema = {
       schemaName: "User",
       fields: [
         {
-          fieldName: "id",
+          fieldName: "user Id",
           type: "String",
           description: "ID of the user",
           maxLength: null,
