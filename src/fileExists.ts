@@ -176,6 +176,10 @@ async function generateSchemaWhenFilePresent(
       return output;
     }
   });
+  return {
+    status: true,
+    message: "Prisma schema generated successfully!",
+  };
 }
 
 /**
@@ -187,10 +191,13 @@ function validateAndMigrate(migrateModels: string[]): returnTypes {
   // TODO: DONE RUN: npx prisma validate
   exec("npx prisma validate", (error, stdout, stderr) => {
     if (error) {
-      console.error("Error executing 'npx prisma validate':", error);
-      return;
+      return {
+        status: false,
+        message: "Error executing 'npx prisma validate'",
+        error: error,
+      };
     }
-    console.log("commands executed successfully", stdout);
+    return { status: true, message: "commands executed successfully", stdout };
   });
 
   // TODO: DONE RUN: prisma migrate dev
@@ -201,7 +208,18 @@ function validateAndMigrate(migrateModels: string[]): returnTypes {
       stdio: "inherit",
     }
   );
+  shell.on("error", (err) => {
+    return {
+      status: false,
+      message: "Error executing 'npx prisma migrate dev'",
+      error: err,
+    };
+  });
   shell.on("close", (code) => {
     console.log("[shell] terminated:", code);
   });
+  return {
+    status: true,
+    message: "commands executed successfully",
+  };
 }
