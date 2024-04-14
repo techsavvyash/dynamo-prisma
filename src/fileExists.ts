@@ -11,7 +11,10 @@ export function generateSchemaFromJson(
   prismaFilePath: string = "./prisma/schema.prisma"
 ) {
   if (!verifyFilePath(prismaFilePath)) {
-    throw new Error("File cannot have '-' in between its name");
+    return {
+      status: false,
+      message: "File cannot have '-' in between its name",
+    };
   }
   if (fs.existsSync(prismaFilePath)) {
     console.log("File exists");
@@ -26,11 +29,13 @@ export function generateSchemaFromJson(
     }
 
     JsonChecks(jsonData, models);
-    generateSchemaWhenFilePresent(jsonData, prismaFilePath);
+    const output = generateSchemaWhenFilePresent(jsonData, prismaFilePath);
+    return output;
   } else {
     console.log("Applying Checks....");
     JsonChecks(jsonData, []);
-    generateIfNoSchema(jsonData);
+    const output = generateIfNoSchema(jsonData);
+    return output;
   }
 }
 
@@ -85,7 +90,9 @@ export function readJsonFile(filePath: string): Promise<Schema> {
   });
 }
 
-export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
+export async function generateIfNoSchema(
+  jsonData: Schema
+): Promise<{ status: boolean; message?: string; error?: string }> {
   const models: any[] = createModels(jsonData.schema);
   console.log("Model generated");
   // console.log(models);
@@ -138,7 +145,11 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
   fs.mkdirSync("./prisma", { recursive: true });
   fs.writeFile("./prisma/schema.prisma", result, (err) => {
     if (err) {
-      console.error("Error writing Prisma schema:", err);
+      return {
+        status: false,
+        message: "Error writing Prisma schema",
+        error: err,
+      };
     } else {
       console.log("Prisma schema generated successfully!");
       let migrateModels: string[] = jsonData.schema.map(
@@ -147,13 +158,21 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<void> {
       validateAndMigrate(migrateModels);
     }
   });
+
+  return {
+    status: true,
+    message: "Prisma schema generated successfully!",
+  };
 }
 export async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
 ) {
   if (!verifyFilePath(prismaFilePath)) {
-    throw new Error("File cannot have '-' in between its name");
+    return {
+      status: false,
+      message: "File cannot have '-' in between its name",
+    };
   }
   const FileData = fs.readFileSync(prismaFilePath, "utf8");
   const models: any[] = createModels(jsonData.schema);
@@ -174,7 +193,11 @@ export async function generateSchemaWhenFilePresent(
   fs.mkdirSync("./prisma", { recursive: true });
   fs.writeFile("./prisma/schema.prisma", result, (err) => {
     if (err) {
-      console.error("Error writing Prisma schema:", err);
+      return {
+        status: false,
+        message: "Error writing Prisma schema",
+        error: err,
+      };
     } else {
       console.log("Prisma schema generated successfully!");
       let migrateModels: string[] = jsonData.schema.map(
@@ -183,16 +206,24 @@ export async function generateSchemaWhenFilePresent(
       validateAndMigrate(migrateModels);
     }
   });
+
+  return {
+    status: true,
+    message: "Prisma schema generated successfully!",
+  };
 }
 
 function validateAndMigrate(migrateModels: string[]) {
   // TODO: DONE RUN: npx prisma validate
   exec("npx prisma validate", (error, stdout, stderr) => {
     if (error) {
-      console.error("Error executing 'npx prisma validate':", error);
-      return;
+      return {
+        status: false,
+        message: "Error executing 'npx prisma validate'",
+        error: error,
+      };
     }
-    console.log("commands executed successfully", stdout);
+    return { status: true, message: "commands executed successfully", stdout };
   });
 
   // TODO: DONE RUN: prisma migrate dev
@@ -203,7 +234,18 @@ function validateAndMigrate(migrateModels: string[]) {
       stdio: "inherit",
     }
   );
+  shell.on("error", (err) => {
+    return {
+      status: false,
+      message: "Error executing 'npx prisma migrate dev'",
+      error: err,
+    };
+  });
   shell.on("close", (code) => {
     console.log("[shell] terminated:", code);
   });
+  return {
+    status: true,
+    message: "commands executed successfully",
+  };
 }
