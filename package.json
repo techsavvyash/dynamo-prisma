@@ -1,6 +1,6 @@
 {
-  "name": "@soorajk1/dynamo-prisma",
-  "version": "1.0.0",
+  "name": "@techsavvyash/dynamo-prisma",
+  "version": "0.1.0",
   "description": "Create Prisma Models Dynamically",
   "main": "dist/index.js",
   "module": "commonjs",
@@ -10,8 +10,8 @@
     "generate-schema": "npm run build && node dist/cli.js ./demo.json",
     "verify-schema": "npx prisma validate"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Himanshu, Sooraj, Yash",
+  "license": "MIT",
   "dependencies": {
     "@nestjs/testing": "^10.3.3",
     "@types/es6-promise": "^3.3.0",
