@@ -1,5 +1,5 @@
-import { Schema, createFields } from "../src/schemaGenerator";
-import * as fs from "fs";
+// import { Schema, createFields } from "../src/schemaGenerator";
+// import * as fs from "fs";
 
 // describe("createFields", () => {
 //   it("should create an array of fields based on the input", () => {
