@@ -30,6 +30,11 @@ export async function generatePrismaSchema(
   } else {
     JsonData = jsonData as Schema;
   }
+  // if (!verifyFilePath(prismaFilePath)) {
+  //  return {
+  //  status: false,
+  //  message: "File cannot have '-' in between its name",
+  // };
   if (fs.existsSync(prismaFilePath)) {
     console.log("File exists");
 
@@ -87,7 +92,8 @@ function readJsonFile(filePath: string): Promise<Schema> {
  * @param jsonData The JSON data containing the schema information.
  * @returns A promise that resolves to an object with the status, message, and error properties.
  */
-async function generateIfNoSchema(
+
+export async function generateIfNoSchema(
   jsonData: Schema
 ): Promise<{ status: boolean; message?: string; error?: string }> {
   const models: any[] = createModels(jsonData.schema);
@@ -113,7 +119,11 @@ async function generateIfNoSchema(
   fs.mkdirSync("./prisma", { recursive: true });
   fs.writeFile("./prisma/schema.prisma", result, (err) => {
     if (err) {
-      console.error("Error writing Prisma schema:", err);
+      return {
+        status: false,
+        message: "Error writing Prisma schema",
+        error: err,
+      };
     } else {
       console.log("Prisma schema generated successfully!");
       let migrateModels: string[] = jsonData.schema.map(
@@ -140,6 +150,7 @@ async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
 ) {
+
   // if (!verifyFilePath(prismaFilePath)) {
   //   return {
   //     status: false,
@@ -166,7 +177,11 @@ async function generateSchemaWhenFilePresent(
   fs.mkdirSync("./prisma", { recursive: true });
   fs.writeFile("./prisma/schema.prisma", result, (err) => {
     if (err) {
-      console.error("Error writing Prisma schema:", err);
+      return {
+        status: false,
+        message: "Error writing Prisma schema",
+        error: err,
+      };
     } else {
       console.log("Prisma schema generated successfully!");
       let migrateModels: string[] = jsonData.schema.map(
@@ -176,6 +191,7 @@ async function generateSchemaWhenFilePresent(
       return output;
     }
   });
+
   return {
     status: true,
     message: "Prisma schema generated successfully!",
