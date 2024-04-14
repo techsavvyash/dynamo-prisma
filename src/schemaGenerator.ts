@@ -44,31 +44,48 @@ export function createFields(fields: Field[]): any[] {
       ? console.error("Cannot have String in autoincrement")
       : null;
 
-    // TODO @db.Uuid if default is uuid, and isId is true
-    result.push(
-      createScalarField(
-        fieldData.fieldName,
-        // fieldData.type as ScalarType
-        //
-        //   : fieldData.isId && fieldData.uuid
-        //   ? ScalarType.String
-        //   :
-        fieldData.type as ScalarType,
-        fieldData.isList || undefined, //isList boolean | undefined
-        !fieldData.nullable || false, //isRequired boolean | undefined
-        fieldData.isId ? fieldData.isId : fieldData.unique || false,
-        fieldData.isId || false,
-        undefined, // isUpdatedAt
-        fieldData.isId && fieldData.autoincrement
-          ? { callee: AUTO_INCREMENT }
-          : fieldData.isId && fieldData.uuid
-          ? { callee: UUID }
-          : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
-        undefined, // documentation string | undefined
-        fieldData.isForeignKey || false, // isForeignKey boolean | undefined
-        undefined // attributes in string | string[] | undefined
-      )
-    );
+    if (fieldData.fieldName.includes(" ")) {
+      const camelizedFieldName = camelize(fieldData.fieldName);
+      result.push(
+        createScalarField(
+          camelizedFieldName,
+          fieldData.type as ScalarType,
+          fieldData.isList || undefined, //isList boolean | undefined
+          !fieldData.nullable || false, //isRequired boolean | undefined
+          fieldData.isId ? fieldData.isId : fieldData.unique || false,
+          fieldData.isId || false,
+          undefined, // isUpdatedAt
+          fieldData.isId && fieldData.autoincrement
+            ? { callee: AUTO_INCREMENT }
+            : fieldData.isId && fieldData.uuid
+            ? { callee: UUID }
+            : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
+          undefined, // documentation string | undefined
+          fieldData.isForeignKey || false, // isForeignKey boolean | undefined
+          `@map("${fieldData.fieldName}")` // attributes in string | string[] | undefined
+        )
+      );
+    } else {
+      result.push(
+        createScalarField(
+          fieldData.fieldName,
+          fieldData.type as ScalarType,
+          fieldData.isList || undefined, //isList boolean | undefined
+          !fieldData.nullable || false, //isRequired boolean | undefined
+          fieldData.isId ? fieldData.isId : fieldData.unique || false,
+          fieldData.isId || false,
+          undefined, // isUpdatedAt
+          fieldData.isId && fieldData.autoincrement
+            ? { callee: AUTO_INCREMENT }
+            : fieldData.isId && fieldData.uuid
+            ? { callee: UUID }
+            : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
+          undefined, // documentation string | undefined
+          fieldData.isForeignKey || false, // isForeignKey boolean | undefined
+          undefined // attributes in string | string[] | undefined
+        )
+      );
+    }
 
     if (fieldData.vectorEmbed) {
       result.push(
@@ -106,4 +123,12 @@ export function createFields(fields: Field[]): any[] {
   }
   // console.log("Results: ", result);
   return result;
+}
+
+function camelize(str) {
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, "");
 }
