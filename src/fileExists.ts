@@ -10,15 +10,9 @@ export function generateSchemaFromJson(
   jsonData: any,
   prismaFilePath: string = "./prisma/schema.prisma"
 ) {
-  if (!verifyFilePath(prismaFilePath)) {
-    return {
-      status: false,
-      message: "File cannot have '-' in between its name",
-    };
-  }
-  if (fs.existsSync(prismaFilePath)) {
-    console.log("File exists");
 
+  if (fs.existsSync(prismaFilePath)) {
+    console.warn("Prisma file exists");
     const fileData = fs.readFileSync(prismaFilePath, "utf8");
     const modelRegex = /model\s+(\w+)\s+{/g;
     const models: string[] = [];
@@ -227,29 +221,46 @@ function validateAndMigrate(migrateModels: string[]) {
         error: error,
       };
     }
-    return { status: true, message: "commands executed successfully", stdout };
+    return { status: true, message: "validate command executed successfully", stdout };
   });
 
-  // TODO: DONE RUN: prisma migrate dev
-  const shell = spawn(
-    "npx",
-    ["prisma", "migrate", "dev", "--name", ...migrateModels],
-    {
-      stdio: "inherit",
-    }
-  );
-  shell.on("error", (err) => {
-    return {
-      status: false,
-      message: "Error executing 'npx prisma migrate dev'",
-      error: err,
-    };
-  });
-  shell.on("close", (code) => {
-    console.log("[shell] terminated:", code);
-  });
+  runCommand('npx', ['prisma', 'validate']).then(() => {
+    console.log('Prisma schema is valid.');
+    //   return runCommand('npx', ['prisma', 'db', 'pull']);
+    // }).then(() => {
+    //   console.log('Prisma migrations fetched from the database.');
+    return runCommand('npx', ['prisma', 'migrate', 'dev', '--name', ...migrateModels, '--create-only'])
+  })
+    .then(() => {
+      console.log('Migration files created successfully.');
+      return runCommand('npx', ['prisma', 'migrate', 'deploy']);
+    })
+    .then(() => {
+      console.log('Migrations have been successfully deployed.');
+    })
+    .catch(error => {
+      console.error('An error occurred:', error);
+    });
+
+
   return {
     status: true,
-    message: "commands executed successfully",
+    message: "migrations applied and generated successfully",
   };
+}
+
+
+function runCommand(command, args) {
+  return new Promise((resolve, reject) => {
+    const spawnedProcess = spawn(command, args, { stdio: "inherit" }); // Enable shell mode for complex commands like npx
+
+    // Handle process completion
+    spawnedProcess.on('close', code => {
+      if (code === 0) {
+        resolve(code); // Resolve the promise if the command was successful
+      } else {
+        reject(new Error(`Command failed with code ${code}: ${command} ${args.join(' ')}`));
+      }
+    });
+  });
 }

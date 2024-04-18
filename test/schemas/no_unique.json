@@ -1,11 +1,11 @@
 {
   "schema": [
     {
-      "schemaName": "test01",
+      "schemaName": "no_unique",
       "fields": [
         {
           "fieldName": "Crop",
-          "type": "VARCHAR",
+          "type": "String",
           "description": "",
           "maxLength": "",
           "nullable": false,

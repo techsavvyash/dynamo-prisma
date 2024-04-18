@@ -1,11 +1,11 @@
 {
   "schema": [
     {
-      "schemaName": "test01-value",
+      "schemaName": "dash-name",
       "fields": [
         {
-          "fieldName": "Crop-value",
-          "type": "VARCHAR",
+          "fieldName": "dash-col",
+          "type": "String",
           "description": "",
           "maxLength": "",
           "nullable": false,

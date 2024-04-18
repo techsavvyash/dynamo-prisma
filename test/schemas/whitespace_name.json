@@ -1,11 +1,11 @@
 {
   "schema": [
     {
-      "schemaName": "test01 space",
+      "schemaName": "white space name",
       "fields": [
         {
-          "fieldName": "Crop space",
-          "type": "VARCHAR",
+          "fieldName": "white space field",
+          "type": "String",
           "description": "",
           "maxLength": "",
           "nullable": false,

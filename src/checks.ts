@@ -1,5 +1,5 @@
 import { Schema } from "./dynamoPrisma.types";
-
+import * as fs from 'fs';
 interface Model {
   schemaName: string;
 }
@@ -100,6 +100,10 @@ export function JsonChecks(
   });
 }
 
+function fixSchemaAndFieldNames(jsonData) {
+
+}
+
 function hasNoDuplicates(result: string[]): boolean {
   const seen: { [key: string]: boolean } = {};
 
@@ -114,20 +118,38 @@ function hasNoDuplicates(result: string[]): boolean {
 }
 
 export function verifyFilePath(filePath: string): boolean {
-  if (filePath.includes("-")) {
-    return false;
-  } else {
-    return true;
-  }
+  return fs.existsSync(filePath);
 }
 
 function ensureEachModelHasPrimaryKey(jsonData: Schema, failOnWarn = false) {
   // jsonData.schema.forEach((model) => {
   for (const model of jsonData.schema) {
-    const primaryKeyFields = model.fields.filter((field) => field.isId);
-    if (primaryKeyFields.length === 0) {
+    if (model.schemaName.includes('-')) {
+      console.warn('Model name should not contain "-" character, replacing it with "_"');
+      model.schemaName = model.schemaName.replace(/-/g, '_');
+    }
+    if (model.schemaName.includes(' ')) {
+      console.warn('Model name should not contain " " character, replacing it with "_"');
+      model.schemaName = model.schemaName.replace(/ /g, '_');
+    }
+
+    let isPrimaryPresent = false;
+    for (const field of model.fields) {
+      if (field.fieldName.includes('-')) {
+        console.warn('Field name should not contain "-" character, replacing it with "_"');
+        field.fieldName = field.fieldName.replace(/-/g, '_');
+      }
+      if (field.fieldName.includes(' ')) {
+        console.warn('Field name should not contain " " character, replacing it with "_"');
+        field.fieldName = field.fieldName.replace(/ /g, '_');
+      }
+
+      isPrimaryPresent = isPrimaryPresent || field.isId || field.unique;
+    }
+
+    if (!isPrimaryPresent) {
       console.warn(
-        `Model ${model.schemaName} does not have a primary key, adding a default 'dummy_id_<random>' field`
+        `Model ${model.schemaName} does not have a primary key, adding a default 'dummy_id_<random>' field with "unique" constraint`
       );
       if (failOnWarn) process.exit(1);
       else {
@@ -138,7 +160,7 @@ function ensureEachModelHasPrimaryKey(jsonData: Schema, failOnWarn = false) {
           maxLength: null,
           default: null,
           nullable: false,
-          unique: false,
+          unique: true,
           isId: true,
           uuid: true,
         });

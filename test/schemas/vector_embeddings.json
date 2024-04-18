@@ -1,11 +1,11 @@
 {
   "schema": [
     {
-      "schemaName": "test01",
+      "schemaName": "vector_embedding",
       "fields": [
         {
           "fieldName": "Crop",
-          "type": "VARCHAR",
+          "type": "String",
           "description": "",
           "maxLength": "",
           "nullable": false,
