@@ -7,8 +7,13 @@ interface Model {
 export function JsonChecks(
   jsonData: Schema,
   modelNameFromSchema: string[]
-): void {
-  ensureEachModelHasPrimaryKey(jsonData);
+): { status: boolean; message: string } {
+  console.error(!ensureEachModelHasPrimaryKey(jsonData));
+  if (!ensureEachModelHasPrimaryKey(jsonData)) {
+    console.error("No primary key");
+    return { status: false, message: "No primary key" };
+  }
+
   console.log("Checking for duplicates...");
   let enumNames: string[] = [];
   let typesDefined: string[] = [];
@@ -41,8 +46,8 @@ export function JsonChecks(
   const fieldCounts: { [fieldName: string]: number } = {};
 
   if (!hasNoDuplicates(typesDefined)) {
-    console.log("Duplicates found");
-    process.exit(1);
+    console.error("Duplicates found");
+    return { status: false, message: "Duplicates found" };
   }
 
   // Check if the autoincrement | uuid is true, and type to be appropiate
@@ -55,23 +60,21 @@ export function JsonChecks(
         process.exit(1);
       }
       if (field.autoincrement && field.type !== "Int") {
-        console.log(
+        console.error(
           `Autoincrement field ${field.fieldName} in model ${model.schemaName} is not of type Int`
         );
-        // console.log("Convert it to int? (true / false) (default: false)");
-        // process.stdin.once("data", (input) => {
-        //   const convertToInt = input.toString().trim() === "true";
-        //   if (!convertToInt) {
-        process.exit(1);
-        //   }
-        //   console.log("Converting to Int...");
-        // });
+        // process.exit(1);
+        return {
+          status: false,
+          message: "Autoincrement field is not of type Int",
+        };
       }
       if (field.uuid && field.type !== "String") {
-        console.log(
+        console.error(
           `UUID field ${field.fieldName} in model ${model.schemaName} is not of type String`
         );
-        process.exit(1);
+        // process.exit(1);
+        return { status: false, message: "UUID field is not of type String" };
       }
     });
   });
@@ -128,12 +131,14 @@ export function verifyFilePath(filePath: string): boolean {
  * @param jsonData - The JSON data containing the schema information.
  */
 function ensureEachModelHasPrimaryKey(jsonData: Schema): boolean {
-  // console.log(jsonData);
+  console.log(jsonData.schema);
   jsonData.schema.length > 0
     ? jsonData.schema.forEach((model) => {
+        // console.warn("Model: ", model);
         const primaryKeyFields = model.fields.filter(
           (field) => field.isId || field.unique
         );
+        console.warn("Primary key fields: ", primaryKeyFields);
         if (primaryKeyFields.length === 0) {
           console.error(
             `Model ${model.schemaName} does not have a primary key`

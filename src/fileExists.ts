@@ -56,11 +56,34 @@ export function GenerateSchemaFile(filePath: string) {
         }
         console.log("Models:", models);
 
-        JsonChecks(jsonData, models);
+        const jsonCheck: { status: boolean; message?: string } = JsonChecks(
+          jsonData,
+          models
+        );
+        if (!jsonCheck.status) {
+          console.error(jsonCheck.message);
+          return {
+            status: false,
+            message: "json check failed",
+            error: jsonCheck.message,
+          };
+        }
         // generateSchemaWhenFilePresent(jsonData, prismaFilePath);
       } else {
         console.log("Applying Checks....");
-        JsonChecks(jsonData, []);
+        // JsonChecks(jsonData, []);
+        const jsonCheck: { status: boolean; message?: string } = JsonChecks(
+          jsonData,
+          []
+        );
+        if (!jsonCheck.status) {
+          console.error(jsonCheck.message);
+          return {
+            status: false,
+            message: "json check failed",
+            error: jsonCheck.message,
+          };
+        }
         generateIfNoSchema(jsonData);
       }
     })
