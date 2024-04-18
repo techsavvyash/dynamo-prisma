@@ -14,7 +14,6 @@ export interface Field {
   default?: string | null;
   autoincrement?: boolean;
   uuid?: boolean;
-
   isId?: boolean;
   vectorEmbed?: boolean;
   embeddingAlgo?: string;
@@ -30,7 +29,6 @@ export interface Schema {
     url: {
       url: string;
       fromEnv: DataSourceURLEnv;
-      // fromEnv: DataSourceURLEnv;
     };
   };
   enum?: Enum[];

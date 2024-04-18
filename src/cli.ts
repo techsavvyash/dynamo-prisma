@@ -1,6 +1,10 @@
-import { GenerateSchemaFile } from "./fileExists";
+import { Schema } from "./types/dynamoPrisma.types";
+import { generatePrismaSchemaFile } from "./schemaGenerator";
+import * as fs from "fs";
+import { readJsonFile } from "./utils/utils";
+import { validateAndMigrate } from "./commands";
 
-export function main(argv: string[]) {
+export async function main(argv: string[]) {
   console.warn(argv);
   if (argv.length < 3) {
     console.error("Please provide the file address as an argument.");
@@ -8,7 +12,11 @@ export function main(argv: string[]) {
   }
 
   const filePath = argv[2];
-  GenerateSchemaFile(filePath);
+  const data = readJsonFile(filePath);
+  console.log("data in cli: ", data);
+  const migrateModels: any = await generatePrismaSchemaFile(data);
+  validateAndMigrate(migrateModels);
+
   return filePath;
 }
 
