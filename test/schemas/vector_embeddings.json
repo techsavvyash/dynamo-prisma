@@ -11,7 +11,7 @@
           "nullable": false,
           "unique": false,
           "vectorEmbed": true,
-          "embeddingAlgorithm": "text-embedding-ada-002"
+          "embeddingAlgo": "text-embedding-ada-002"
         }
       ],
       "description": "Schema for seed treating materials data with details of each order"

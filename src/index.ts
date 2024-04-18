@@ -1,5 +1,3 @@
-export {
-  generateSchemaWhenFilePresent,
-  generateIfNoSchema,
-  generatePrismaSchemaFile as GenerateSchemaFile,
-} from "./schemaGenerator";
+export * from "./commands";
+export * from "./utils/constants";
+export * from "./schemaGenerator";
