@@ -1,16 +1,20 @@
 {
-    "schemaName": "test01",
-    "fields": [
+  "schema": [
+    {
+      "schemaName": "test01",
+      "fields": [
         {
-            "fieldName": "Crop",
-            "type": "VARCHAR",
-            "description": "",
-            "maxLength": "",
-            "nullable": false,
-            "unique": false,
-            "vectorEmbed": true,
-            "embeddingAlgorithm": "text-embedding-ada-002"
+          "fieldName": "Crop",
+          "type": "VARCHAR",
+          "description": "",
+          "maxLength": "",
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": true,
+          "embeddingAlgorithm": "text-embedding-ada-002"
         }
-    ],
-    "description": "Schema for seed treating materials data with details of each order"
+      ],
+      "description": "Schema for seed treating materials data with details of each order"
+    }
+  ]
 }

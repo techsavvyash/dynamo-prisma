@@ -8,7 +8,7 @@ export function JsonChecks(
   jsonData: Schema,
   modelNameFromSchema: string[]
 ): void {
-  ensureEachModelHasPrimaryKey(jsonData);
+  jsonData = ensureEachModelHasPrimaryKey(jsonData);
   console.log("Checking for duplicates...");
   let enumNames: string[] = [];
   let typesDefined: string[] = [];
@@ -122,11 +122,29 @@ export function verifyFilePath(filePath: string): boolean {
 }
 
 function ensureEachModelHasPrimaryKey(jsonData: Schema, failOnWarn = false) {
-  jsonData.schema.forEach((model) => {
+  // jsonData.schema.forEach((model) => {
+  for (const model of jsonData.schema) {
     const primaryKeyFields = model.fields.filter((field) => field.isId);
     if (primaryKeyFields.length === 0) {
-      console.error(`Model ${model.schemaName} does not have a primary key`);
-      process.exit(1);
+      console.warn(
+        `Model ${model.schemaName} does not have a primary key, adding a default 'dummy_id_<random>' field`
+      );
+      if (failOnWarn) process.exit(1);
+      else {
+        model.fields.push({
+          fieldName: "dummy_id",
+          type: "String",
+          description: "Dummy ID of the user",
+          maxLength: null,
+          default: null,
+          nullable: false,
+          unique: false,
+          isId: true,
+          uuid: true,
+        });
+      }
     }
-  });
+  }
+
+  return jsonData;
 }

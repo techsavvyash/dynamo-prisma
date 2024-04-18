@@ -1,17 +1,19 @@
 {
-   "schema": [{
-        "schemaName": "test01",
-        "fields": [
-            {
-                "fieldName": "Crop",
-                "type": "VARCHAR",
-                "description": "",
-                "maxLength": "",
-                "nullable": false,
-                "unique": false,
-                "vectorEmbed": false
-            }
-        ],
-        "description": "Schema for seed treating materials data with details of each order"
-}]
+  "schema": [
+    {
+      "schemaName": "test01",
+      "fields": [
+        {
+          "fieldName": "Crop",
+          "type": "VARCHAR",
+          "description": "",
+          "maxLength": "",
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false
+        }
+      ],
+      "description": "Schema for seed treating materials data with details of each order"
+    }
+  ]
 }

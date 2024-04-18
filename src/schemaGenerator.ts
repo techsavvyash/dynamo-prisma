@@ -58,8 +58,8 @@ export function createFields(fields: Field[]): any[] {
           fieldData.isId && fieldData.autoincrement
             ? { callee: AUTO_INCREMENT }
             : fieldData.isId && fieldData.uuid
-            ? { callee: UUID }
-            : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
+              ? { callee: UUID }
+              : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
           undefined, // documentation string | undefined
           fieldData.isForeignKey || false, // isForeignKey boolean | undefined
           `@map("${fieldData.fieldName}")` // attributes in string | string[] | undefined
@@ -78,8 +78,8 @@ export function createFields(fields: Field[]): any[] {
           fieldData.isId && fieldData.autoincrement
             ? { callee: AUTO_INCREMENT }
             : fieldData.isId && fieldData.uuid
-            ? { callee: UUID }
-            : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
+              ? { callee: UUID }
+              : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
           undefined, // documentation string | undefined
           fieldData.isForeignKey || false, // isForeignKey boolean | undefined
           undefined // attributes in string | string[] | undefined
@@ -105,8 +105,7 @@ export function createFields(fields: Field[]): any[] {
 
         createScalarField(
           `${fieldData.fieldName}Embedding`,
-          `Unsupported("vector(${
-            fieldData.embeddingAlgo!.length
+          `Unsupported("vector(${fieldData.embeddingAlgo!.length
           })")` as ScalarType,
           false,
           true,

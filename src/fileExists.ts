@@ -41,6 +41,7 @@ export function generateSchemaFromJson(
 
 export function GenerateSchemaFile(filePath: string) {
   const prismaFilePath = "./prisma/schema.prisma";
+
   readJsonFile(filePath)
     .then(async (jsonData: Schema) => {
       if (fs.existsSync(prismaFilePath)) {
@@ -66,6 +67,10 @@ export function GenerateSchemaFile(filePath: string) {
     })
     .catch((err) => {
       console.error("Error reading file", err);
+      throw new Error(JSON.stringify({
+        error: true,
+        message: err
+      }));
     });
 }
 
@@ -80,7 +85,6 @@ export function readJsonFile(filePath: string): Promise<Schema> {
 
       try {
         const jsonData: Schema = JSON.parse(data);
-        console.log("JSON Parsed");
         resolve(jsonData);
       } catch (error) {
         console.error("Failed to parse. ERROR: ", err);
