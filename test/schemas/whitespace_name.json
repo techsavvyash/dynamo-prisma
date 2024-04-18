@@ -1,0 +1,15 @@
+{
+    "schemaName": "test01 space",
+    "fields": [
+        {
+            "fieldName": "Crop space",
+            "type": "VARCHAR",
+            "description": "",
+            "maxLength": "",
+            "nullable": false,
+            "unique": false,
+            "vectorEmbed": false
+        }
+    ],
+    "description": "Schema for seed treating materials data with details of each order"
+}

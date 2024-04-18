@@ -121,7 +121,7 @@ export function verifyFilePath(filePath: string): boolean {
   }
 }
 
-function ensureEachModelHasPrimaryKey(jsonData: Schema) {
+function ensureEachModelHasPrimaryKey(jsonData: Schema, failOnWarn = false) {
   jsonData.schema.forEach((model) => {
     const primaryKeyFields = model.fields.filter((field) => field.isId);
     if (primaryKeyFields.length === 0) {

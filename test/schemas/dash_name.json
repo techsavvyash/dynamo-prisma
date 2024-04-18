@@ -1,0 +1,15 @@
+{
+    "schemaName": "test01-value",
+    "fields": [
+        {
+            "fieldName": "Crop-value",
+            "type": "VARCHAR",
+            "description": "",
+            "maxLength": "",
+            "nullable": false,
+            "unique": false,
+            "vectorEmbed": false
+        }
+    ],
+    "description": "Schema for seed treating materials data with details of each order"
+}
