@@ -29,6 +29,7 @@ export async function generatePrismaSchema(
     JsonData = parsedJsonData;
   } else {
     JsonData = jsonData as Schema;
+
   }
   // if (!verifyFilePath(prismaFilePath)) {
   //  return {
@@ -92,7 +93,6 @@ function readJsonFile(filePath: string): Promise<Schema> {
  * @param jsonData The JSON data containing the schema information.
  * @returns A promise that resolves to an object with the status, message, and error properties.
  */
-
 export async function generateIfNoSchema(
   jsonData: Schema
 ): Promise<{ status: boolean; message?: string; error?: string }> {
@@ -157,6 +157,7 @@ async function generateSchemaWhenFilePresent(
   //     message: "File cannot have '-' in between its name",
   //   };
   // }
+
 
   const FileData = fs.readFileSync(prismaFilePath, "utf8");
   const models: any[] = createModels(jsonData.schema);
