@@ -34,22 +34,7 @@ export function runDBPull() {
 }
 
 export function validateAndMigrate(migrateModels: string[]) {
-  // TODO: DONE RUN: npx prisma validate
-  exec("npx prisma validate", (error, stdout, stderr) => {
-    if (error) {
-      return {
-        status: false,
-        message: "Error executing 'npx prisma validate'",
-        error: error,
-      };
-    }
-    return {
-      status: true,
-      message: "validate command executed successfully",
-      stdout,
-    };
-  });
-
+  console.log("migrateModels: ", migrateModels);
   runCommand("npx", ["prisma", "validate"])
     .then(() => {
       console.log("Prisma schema is valid.");

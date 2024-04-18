@@ -166,5 +166,18 @@
       "name": "UserType",
       "values": ["ADMIN", "USER", "MODERATOR"]
     }
-  ]
+  ],
+  "dataSource": {
+    "name": "db",
+    "provider": "postgresql",
+    "url": {
+      "fromEnv": "DATABASE_URL"
+    },
+    "extensions": ["vector", "pg_trgm"]
+  },
+  "generator": {
+    "provider": "prisma-client-js",
+    "generatorName": "client",
+    "previewFeatures": ["postgresqlExtensions", "views"]
+  }
 }

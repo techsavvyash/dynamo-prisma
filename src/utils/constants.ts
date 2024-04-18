@@ -7,6 +7,7 @@ export const SUPPORTED_DATA_TYPES = [
   "Decimal",
   "Json",
   "Bytes",
+  "BigInt",
   "Unsupported",
 ];
 

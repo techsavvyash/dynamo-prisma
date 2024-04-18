@@ -7,6 +7,7 @@ import { checkJSON } from "./checks";
 import { createSchema, print } from "prisma-schema-dsl";
 import { Schema } from "./types/dynamoPrisma.types";
 import { parseExistingModels } from "./utils/utils";
+import { validateAndMigrate } from "./commands";
 
 export async function generateIfNoSchema(jsonData: Schema): Promise<string[]> {
   if (!jsonData.dataSource || !jsonData.generator) {
@@ -49,7 +50,8 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<string[]> {
       };
     } else {
       console.log("Prisma schema generated successfully!");
-      jsonData.schema.map((model) => model.schemaName);
+      migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
+      // validateAndMigrate(migrateModels);
     }
   });
 
@@ -59,7 +61,6 @@ export async function generateSchemaWhenFilePresent(
   jsonData: Schema,
   prismaFilePath: string
 ): Promise<string[]> {
-  const fileData = fs.readFileSync(prismaFilePath, "utf8");
   const models: any[] = createModels(jsonData.schema);
 
   let result: string;
@@ -67,23 +68,28 @@ export async function generateSchemaWhenFilePresent(
   const Enum = jsonData.enum ? jsonData.enum! : [];
   const schema = createSchema(models, Enum, undefined, undefined);
   const schemaString = await print(schema);
-  result = fileData + "\n\n" + schemaString;
+  fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
   const migrateModels: string[] = [];
   fs.mkdirSync("./prisma", { recursive: true });
-  fs.writeFile("./prisma/schema.prisma", result, (err) => {
-    if (err) {
-      throw new Error(
-        JSON.stringify({
-          status: false,
-          message: "Error writing Prisma schema",
-          error: err,
-        })
-      );
-    } else {
-      console.log("🚀 Prisma schema generated successfully!");
-      jsonData.schema.map((model) => model.schemaName);
+  fs.writeFile(
+    "./prisma/schema.prisma",
+    fs.readFileSync(prismaFilePath, "utf8"),
+    (err) => {
+      if (err) {
+        throw new Error(
+          JSON.stringify({
+            status: false,
+            message: "Error writing Prisma schema",
+            error: err,
+          })
+        );
+      } else {
+        console.log("🚀 Prisma schema generated successfully!");
+        migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
+        // validateAndMigrate(migrateModels);
+      }
     }
-  });
+  );
   return migrateModels;
 }
 
@@ -102,10 +108,11 @@ export async function generatePrismaSchemaFile(
   const models = prismaFileExists
     ? parseExistingModels(fs.readFileSync(prismaFilePath, "utf8"))
     : [];
-  console.log("🔎Checking and Sanitising JSON Schema.");
+  console.log("🔎 Checking and Sanitising JSON Schema.");
   jsonData = checkJSON(jsonData, models, failOnWarn);
 
   if (prismaFileExists) {
+    console.log("📝 Prisma Schema file exists.");
     return await generateSchemaWhenFilePresent(jsonData, prismaFilePath);
   } else {
     return await generateIfNoSchema(jsonData);

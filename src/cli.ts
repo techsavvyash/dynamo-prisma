@@ -1,3 +1,7 @@
+/**
+ * @description This is just for manual testing
+ * run: npx ts-node src/cli.ts ./test/schemas/no_unique.json
+ */
 import { Schema } from "./types/dynamoPrisma.types";
 import { generatePrismaSchemaFile } from "./schemaGenerator";
 import * as fs from "fs";
@@ -15,7 +19,7 @@ export async function main(argv: string[]) {
   const data = readJsonFile(filePath);
   console.log("data in cli: ", data);
   const migrateModels: any = await generatePrismaSchemaFile(data);
-  validateAndMigrate(migrateModels);
+  // validateAndMigrate(migrateModels);
 
   return filePath;
 }
