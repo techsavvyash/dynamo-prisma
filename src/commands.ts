@@ -27,9 +27,21 @@ export function runDBPull() {
   exec("npx prisma db pull", (error, stdout, stderr) => {
     if (error) {
       console.error('Error executing "npx prisma db pull"', error);
-      return;
+      throw new Error(
+        JSON.stringify({
+          error: true,
+          message: `Error while performing npx prisma db pull ${error}`,
+        })
+      );
     }
-    console.log("Prisma migrations fetched from the database.");
+    console.log(
+      "🚀 Prisma schema has been populated with old tables fetched from the database"
+    );
+    return {
+      status: true,
+      message:
+        "Prisma schema has been populated with old tables fetched from the database.",
+    };
   });
 }
 
@@ -57,6 +69,12 @@ export function validateAndMigrate(migrateModels: string[]) {
     })
     .catch((error) => {
       console.error("An error occurred:", error);
+      throw new Error(
+        JSON.stringify({
+          error: true,
+          message: `Error validating and migrating Prisma schema: ${error}`,
+        })
+      );
     });
 
   return {

@@ -6,10 +6,13 @@ import { createModels } from "./dsl-helper";
 import { checkJSON } from "./checks";
 import { createSchema, print } from "prisma-schema-dsl";
 import { Schema } from "./types/dynamoPrisma.types";
-import { parseExistingEnums, parseExistingModels } from "./utils/utils";
+import { parseExistingEnums, parsePrismaSchemaModels } from "./utils/utils";
 import { validateAndMigrate } from "./commands";
 
-export async function generateIfNoSchema(jsonData: Schema): Promise<string[]> {
+export async function generateIfNoSchema(
+  jsonData: Schema,
+  prismaFilePath: string
+): Promise<string[]> {
   if (!jsonData.dataSource || !jsonData.generator) {
     throw new Error(
       JSON.stringify({
@@ -38,22 +41,22 @@ export async function generateIfNoSchema(jsonData: Schema): Promise<string[]> {
   const schemaString = await print(schema);
   result = Generator + "\n" + DataSource + "\n" + schemaString;
 
-  console.warn("schema generated");
   const migrateModels: string[] = [];
-  fs.mkdirSync("./prisma", { recursive: true });
-  fs.writeFile("./prisma/schema.prisma", result, (err) => {
-    if (err) {
-      return {
-        status: false,
+  try {
+    fs.mkdirSync(prismaFilePath.split("/schema.prisma")[0], {
+      recursive: true,
+    });
+    fs.writeFileSync(prismaFilePath, result);
+    console.log("🚀 Prisma schema generated successfully!");
+    migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
+  } catch (err) {
+    throw new Error(
+      JSON.stringify({
+        error: true,
         message: "Error writing Prisma schema",
-        error: err,
-      };
-    } else {
-      console.log("Prisma schema generated successfully!");
-      migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
-      // validateAndMigrate(migrateModels);
-    }
-  });
+      })
+    );
+  }
 
   return migrateModels;
 }
@@ -68,28 +71,22 @@ export async function generateSchemaWhenFilePresent(
   const Enum = jsonData.enum ? jsonData.enum! : [];
   const schema = createSchema(models, Enum, undefined, undefined);
   const schemaString = await print(schema);
-  fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
   const migrateModels: string[] = [];
-  fs.mkdirSync("./prisma", { recursive: true });
-  fs.writeFile(
-    "./prisma/schema.prisma",
-    fs.readFileSync(prismaFilePath, "utf8"),
-    (err) => {
-      if (err) {
-        throw new Error(
-          JSON.stringify({
-            status: false,
-            message: "Error writing Prisma schema",
-            error: err,
-          })
-        );
-      } else {
-        console.log("🚀 Prisma schema generated successfully!");
-        migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
-        // validateAndMigrate(migrateModels);
-      }
-    }
-  );
+
+  try {
+    fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
+    console.log("🚀 Prisma schema generated successfully!");
+    migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
+  } catch (err) {
+    throw new Error(
+      JSON.stringify({
+        status: false,
+        message: "Error writing Prisma schema",
+        error: err,
+      })
+    );
+  }
+
   return migrateModels;
 }
 
@@ -103,11 +100,11 @@ export async function generatePrismaSchemaFile(
   jsonData: Schema,
   prismaFilePath: string = "./prisma/schema.prisma",
   failOnWarn: boolean = false
-) {
+): Promise<string[]> {
   const prismaFileExists = fs.existsSync(prismaFilePath);
 
   const models = prismaFileExists
-    ? parseExistingModels(fs.readFileSync(prismaFilePath, "utf8"))
+    ? parsePrismaSchemaModels(fs.readFileSync(prismaFilePath, "utf8"))
     : [];
   const enums = prismaFileExists
     ? parseExistingEnums(fs.readFileSync(prismaFilePath, "utf8"))
@@ -119,6 +116,6 @@ export async function generatePrismaSchemaFile(
     console.log("📝 Prisma Schema file exists.");
     return await generateSchemaWhenFilePresent(jsonData, prismaFilePath);
   } else {
-    return await generateIfNoSchema(jsonData);
+    return await generateIfNoSchema(jsonData, prismaFilePath);
   }
 }

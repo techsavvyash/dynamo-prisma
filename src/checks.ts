@@ -26,11 +26,12 @@ export function checkJSON(
   const newModelObjects = [];
   const models = jsonData.schema.map((model) => {
     if (!existingData.models.includes(model.schemaName)) {
+      newModelObjects.push(model);
+      return model.schemaName;
+    } else {
       console.warn(
         `Model ${model.schemaName} is already defined in the schema, please use a different name, skipping this one.`
       );
-      newModelObjects.push(model);
-      return model.schemaName;
     }
   });
   const newEnums = [];
