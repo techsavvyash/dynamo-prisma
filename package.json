@@ -1,9 +1,13 @@
 {
   "name": "@techsavvyash/dynamo-prisma",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Create Prisma Models Dynamically",
-  "main": "src/index.ts",
+  "main": "dist/src/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc",
     "test": "jest",
     "cleanup": "rm -r ./prisma"
   },
