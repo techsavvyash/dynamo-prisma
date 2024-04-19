@@ -17,9 +17,8 @@ export async function main(argv: string[]) {
 
   const filePath = argv[2];
   const data = readJsonFile(filePath);
-  console.log("data in cli: ", data);
   const migrateModels: any = await generatePrismaSchemaFile(data);
-  // validateAndMigrate(migrateModels);
+  validateAndMigrate(migrateModels);
 
   return filePath;
 }

@@ -6,6 +6,11 @@ import {
   generateDummyID,
 } from "./utils/utils";
 
+type existingData = {
+  models: string[];
+  enums: string[];
+};
+
 /**
  *
  * @description This function performs a series of checks the JSON Schema by calling the sanitizeJSONSchema function with the defined types
@@ -15,21 +20,51 @@ import {
  */
 export function checkJSON(
   jsonData: Schema,
-  modelNameFromExistingSchema: string[],
+  existingData: existingData,
   failOnWarn = false
 ): Schema {
-  const enumNames: string[] = jsonData.enum
-    ? jsonData.enum!.map((enums) => enums.name)
-    : [];
-  console.log("jsondata: ", jsonData);
-  let models: string[] = jsonData.schema.map((model) => model.schemaName);
+  const newModelObjects = [];
+  const models = jsonData.schema.map((model) => {
+    if (!existingData.models.includes(model.schemaName)) {
+      console.warn(
+        `Model ${model.schemaName} is already defined in the schema, please use a different name, skipping this one.`
+      );
+      newModelObjects.push(model);
+      return model.schemaName;
+    }
+  });
+  const newEnums = [];
+  const enumNames =
+    jsonData.enum?.map((enumItem) => {
+      if (!existingData.enums.includes(enumItem.name)) {
+        console.warn(
+          `Enum ${enumItem.name} is already defined in the schema, please use a different name, skipping this one.`
+        );
+        newEnums.push(enumItem);
+        return enumItem.name;
+      }
+    }) ?? [];
+
+  if (newModelObjects.length === 0 && newEnums.length === 0) {
+    // we are disregarding the datasource and generator sections being different here since those are not supported very well right now
+    throw new Error(
+      JSON.stringify({
+        error: true,
+        message: "This schema is already ingested in the db",
+      })
+    );
+  }
+  // drop models with the same name in old file and the new schema
+  jsonData.schema = newModelObjects as unknown as Schema["schema"];
+  jsonData.enum = newEnums as unknown as Schema["enum"];
 
   const definedTypes = Array.from(
     new Set([
       ...SUPPORTED_DATA_TYPES,
       ...enumNames,
       ...models,
-      ...modelNameFromExistingSchema,
+      ...existingData.models,
+      ...existingData.enums,
     ])
   );
   return sanitizeJSONSchema(jsonData, definedTypes, failOnWarn);

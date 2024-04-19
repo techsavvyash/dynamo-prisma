@@ -56,12 +56,20 @@ export function createFields(fields: Field[]): any[] {
           ? { callee: UUID }
           : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
         undefined, // documentation string | undefined
-        fieldData.isForeignKey || false, // isForeignKey boolean | undefined
-        `@map("${fieldData.fieldName}")` // attributes in string | string[] | undefined
+        fieldData.isForeignKey || false // isForeignKey boolean | undefined
+        // `@map("${fieldData.fieldName}")` // attributes in string | string[] | undefined
       )
     );
 
     if (fieldData.vectorEmbed) {
+      if (
+        Object.keys(EMBEDDING_ALGO_SIZE).includes(fieldData.embeddingAlgo) ===
+        false
+      ) {
+        throw new Error(
+          `Embedding algorithm ${fieldData.embeddingAlgo} not supported.`
+        );
+      }
       result.push(
         createScalarField(
           `${fieldData.fieldName}Algorithm`,

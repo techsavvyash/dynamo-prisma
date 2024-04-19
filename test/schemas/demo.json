@@ -155,7 +155,7 @@
           "unique": false,
           "isForeignKey": true,
           "vectorEmbed": true,
-          "embeddingAlgo": "whatever"
+          "embeddingAlgo": "text-embedding-3-large"
         }
       ],
       "description": "Comment model"

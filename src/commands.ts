@@ -44,7 +44,7 @@ export function validateAndMigrate(migrateModels: string[]) {
         "migrate",
         "dev",
         "--name",
-        ...migrateModels,
+        `${Date.now()}_dynamo_prisma_` + migrateModels.join("_"),
         "--create-only",
       ]);
     })

@@ -6,7 +6,7 @@ import { createModels } from "./dsl-helper";
 import { checkJSON } from "./checks";
 import { createSchema, print } from "prisma-schema-dsl";
 import { Schema } from "./types/dynamoPrisma.types";
-import { parseExistingModels } from "./utils/utils";
+import { parseExistingEnums, parseExistingModels } from "./utils/utils";
 import { validateAndMigrate } from "./commands";
 
 export async function generateIfNoSchema(jsonData: Schema): Promise<string[]> {
@@ -105,11 +105,15 @@ export async function generatePrismaSchemaFile(
   failOnWarn: boolean = false
 ) {
   const prismaFileExists = fs.existsSync(prismaFilePath);
+
   const models = prismaFileExists
     ? parseExistingModels(fs.readFileSync(prismaFilePath, "utf8"))
     : [];
+  const enums = prismaFileExists
+    ? parseExistingEnums(fs.readFileSync(prismaFilePath, "utf8"))
+    : [];
   console.log("🔎 Checking and Sanitising JSON Schema.");
-  jsonData = checkJSON(jsonData, models, failOnWarn);
+  jsonData = checkJSON(jsonData, { models, enums }, failOnWarn);
 
   if (prismaFileExists) {
     console.log("📝 Prisma Schema file exists.");

@@ -48,13 +48,13 @@ export function checkIllegalCombinationOfFieldAttributes(
   schemaName: string
 ) {
   // make sure the field is of a supported type
-  if (!SUPPORTED_DATA_TYPES.includes(field.type)) {
+  if (!definedTypes.includes(field.type)) {
     throw new Error(
       JSON.stringify({
         error: true,
-        message: `${
-          field.fieldName
-        } in model ${schemaName} is not of any of the following types ${SUPPORTED_DATA_TYPES.toString()}`,
+        message: `${field.fieldName} in model ${schemaName} is of type ${
+          field.type
+        } which is not included in the following types ${definedTypes.toString()}`,
       })
     );
   }
@@ -98,14 +98,27 @@ export function checkIllegalCombinationOfFieldAttributes(
 export function parseExistingModels(fileContent: string) {
   const modelRegex = /model\s+(\w+)\s+{/g;
   const models: string[] = [];
-  const match = modelRegex.exec(fileContent);
-  while (match !== null) {
+  let match;
+  while ((match = modelRegex.exec(fileContent)) !== null) {
     const modelName = match[1];
     models.push(modelName);
   }
 
   console.log("Models:", models);
   return models;
+}
+
+export function parseExistingEnums(fileContent: string) {
+  const enumRegex = /enum\s+(\w+)\s+{/g;
+  const enums: string[] = [];
+  let match;
+  while ((match = enumRegex.exec(fileContent)) !== null) {
+    const enumName = match[1];
+    enums.push(enumName);
+  }
+
+  console.log("Enums:", enums);
+  return enums;
 }
 
 export function readJsonFile(filePath: string): Schema {
