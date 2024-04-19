@@ -2,11 +2,9 @@
  * @description This is just for manual testing
  * run: npx ts-node src/cli.ts ./test/schemas/no_unique.json
  */
-import { Schema } from "./types/dynamoPrisma.types";
-import { generatePrismaSchemaFile } from "./schemaGenerator";
-import * as fs from "fs";
-import { readJsonFile } from "./utils/utils";
-import { validateAndMigrate } from "./commands";
+import { generatePrismaSchemaFile } from "../src/schemaGenerator";
+import { readJsonFile } from "../src/utils/utils";
+import { validateAndMigrate } from "../src/commands";
 
 export async function main(argv: string[]) {
   console.warn(argv);
