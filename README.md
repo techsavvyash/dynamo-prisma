@@ -4,27 +4,14 @@ Generate Prisma schema dynamically using json file.
 
 ## Installation
 
-### using git-clone
-
 ```bash
-git clone https://github.com/techsavvyash/dynamo-prisma.git
-npm link
-```
-
-### using npm
-
-```bash
-npm install @techsavvyash/dynamo-prisma
+npm install @techsavvyash/dynamo-prisma@0.0.1
 ```
 
 
 
 ## Usage
-
-Visit [dynamo-prisma function](./docs/functions.md) for more details.
-
-for info on schema you should follow, visit: [JSON Schema](./docs/schema.md)
-
+For information on schema you should follow, visit: [JSON Schema](./docs/schema.md)
 
 ## References
 
