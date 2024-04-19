@@ -155,10 +155,23 @@
           "unique": false,
           "isForeignKey": true,
           "vectorEmbed": true,
-          "embeddingAlgo": "whatever"
+          "embeddingAlgo": "text-embedding-3-large"
         }
       ],
       "description": "Comment model"
     }
-  ]
+  ],
+  "dataSource": {
+    "name": "db",
+    "provider": "postgresql",
+    "url": {
+      "fromEnv": "DATABASE_URL"
+    },
+    "extensions": ["vector", "pg_trgm"]
+  },
+  "generator": {
+    "provider": "prisma-client-js",
+    "generatorName": "client",
+    "previewFeatures": ["postgresqlExtensions", "views"]
+  }
 }

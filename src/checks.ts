@@ -1,132 +1,113 @@
-import { Schema } from "./dynamoPrisma.types";
+import { SUPPORTED_DATA_TYPES } from "./utils/constants";
+import { Schema } from "./types/dynamoPrisma.types";
+import {
+  checkIllegalCombinationOfFieldAttributes,
+  fixDashesAndSpaces,
+  generateDummyID,
+} from "./utils/utils";
 
-interface Model {
-  schemaName: string;
-}
+type existingData = {
+  models: string[];
+  enums: string[];
+};
 
-export function JsonChecks(
+/**
+ *
+ * @description This function performs a series of checks the JSON Schema by calling the sanitizeJSONSchema function with the defined types
+ * @param jsonData
+ * @param modelNameFromExistingSchema
+ * @param failOnWarn
+ */
+export function checkJSON(
   jsonData: Schema,
-  modelNameFromSchema: string[]
-): void {
-  ensureEachModelHasPrimaryKey(jsonData);
-  console.log("Checking for duplicates...");
-  let enumNames: string[] = [];
-  let typesDefined: string[] = [];
-  jsonData.enum
-    ? jsonData.enum!.map((enums) => enumNames.push(enums.name))
-    : [];
-  // || [];
-  let models: string[] = jsonData.schema.map((model) => model.schemaName);
-  let modelNameDefinedInSchema: string[] = modelNameFromSchema.map(
-    (model) => model
-  );
-
-  typesDefined.push(
-    "String",
-    "Int",
-    "Float",
-    "Boolean",
-    "DateTime",
-    "Decimal",
-    "Json",
-    "Bytes",
-    "Unsupported",
-    ...enumNames,
-    ...models,
-    ...modelNameDefinedInSchema
-  );
-
-  console.log(typesDefined);
-
-  const fieldCounts: { [fieldName: string]: number } = {};
-
-  if (!hasNoDuplicates(typesDefined)) {
-    console.log("Duplicates found");
-    process.exit(1);
-  }
-
-  // Check if the autoincrement | uuid is true, and type to be appropiate
-  jsonData.schema.forEach((model) => {
-    model.fields.forEach((field) => {
-      if (field.autoincrement && field.uuid) {
-        console.error(
-          `${field.fieldName} in model ${model.schemaName} cannot be both autoincrement and uuid`
-        );
-        process.exit(1);
-      }
-      if (field.autoincrement && field.type !== "Int") {
-        console.log(
-          `Autoincrement field ${field.fieldName} in model ${model.schemaName} is not of type Int`
-        );
-        // console.log("Convert it to int? (true / false) (default: false)");
-        // process.stdin.once("data", (input) => {
-        //   const convertToInt = input.toString().trim() === "true";
-        //   if (!convertToInt) {
-        process.exit(1);
-        //   }
-        //   console.log("Converting to Int...");
-        // });
-      }
-      if (field.uuid && field.type !== "String") {
-        console.log(
-          `UUID field ${field.fieldName} in model ${model.schemaName} is not of type String`
-        );
-        process.exit(1);
-      }
-    });
-  });
-
-  // check if foreign key is false, and type is not equal to String, Int, Float, Boolean, DateTime, Json
-  jsonData.schema.forEach((model) => {
-    model.fields.forEach((field) => {
-      if (!field.isForeignKey) {
-        if (![...typesDefined].includes(field.type)) {
-          console.error(
-            `${field.fieldName} in model ${model.schemaName} is not a foreign key and not of type: "String",
-            "Int",
-            "Float",
-            "Boolean",
-            "DateTime",
-            "Decimal",
-            "Json",
-            "Bytes",
-            "Unsupported" or any other supported types`
-          );
-          console.error("model: ", field);
-          process.exit(1);
-        }
-      }
-    });
-  });
-}
-
-function hasNoDuplicates(result: string[]): boolean {
-  const seen: { [key: string]: boolean } = {};
-
-  for (const item of result) {
-    if (seen[item]) {
-      return false;
-    }
-    seen[item] = true;
-  }
-
-  return true;
-}
-
-export function verifyFilePath(filePath: string): boolean {
-  if (filePath.includes("-")) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
-function ensureEachModelHasPrimaryKey(jsonData: Schema) {
-  jsonData.schema.forEach((model) => {
-    const primaryKeyFields = model.fields.filter((field) => field.isId);
-    if (primaryKeyFields.length === 0) {
-      console.error(`Model ${model.schemaName} does not have a primary key`);
-      process.exit(1);
+  existingData: existingData,
+  failOnWarn = false
+): Schema {
+  const newModelObjects = [];
+  const models = jsonData.schema.map((model) => {
+    if (!existingData.models.includes(model.schemaName)) {
+      console.warn(
+        `Model ${model.schemaName} is already defined in the schema, please use a different name, skipping this one.`
+      );
+      newModelObjects.push(model);
+      return model.schemaName;
     }
   });
+  const newEnums = [];
+  const enumNames =
+    jsonData.enum?.map((enumItem) => {
+      if (!existingData.enums.includes(enumItem.name)) {
+        console.warn(
+          `Enum ${enumItem.name} is already defined in the schema, please use a different name, skipping this one.`
+        );
+        newEnums.push(enumItem);
+        return enumItem.name;
+      }
+    }) ?? [];
+
+  if (newModelObjects.length === 0 && newEnums.length === 0) {
+    // we are disregarding the datasource and generator sections being different here since those are not supported very well right now
+    throw new Error(
+      JSON.stringify({
+        error: true,
+        message: "This schema is already ingested in the db",
+      })
+    );
+  }
+  // drop models with the same name in old file and the new schema
+  jsonData.schema = newModelObjects as unknown as Schema["schema"];
+  jsonData.enum = newEnums as unknown as Schema["enum"];
+
+  const definedTypes = Array.from(
+    new Set([
+      ...SUPPORTED_DATA_TYPES,
+      ...enumNames,
+      ...models,
+      ...existingData.models,
+      ...existingData.enums,
+    ])
+  );
+  return sanitizeJSONSchema(jsonData, definedTypes, failOnWarn);
+}
+
+/**
+ *
+ * @description This function santizes the received JSON Schema by performing the following:
+ *  1. Fix the names of model and fields with legal prisma practices (not allowing '-' and ' ')
+ *  2. checks for primary/unique key constraints, i.e. no model is left without a primary key/unique field
+ *  3. Checking illegal combination of fields like autoincrement and uuid
+ * @param jsonData
+ * @param failOnWarn
+ * @returns Schema
+ */
+function sanitizeJSONSchema(
+  jsonData: Schema,
+  definedTypes = SUPPORTED_DATA_TYPES,
+  failOnWarn = false
+): Schema {
+  for (const model of jsonData.schema) {
+    model.schemaName = fixDashesAndSpaces(model.schemaName);
+    let isPrimaryPresent = false;
+    for (const field of model.fields) {
+      field.fieldName = fixDashesAndSpaces(field.fieldName);
+      isPrimaryPresent = isPrimaryPresent || field.isId || field.unique;
+      checkIllegalCombinationOfFieldAttributes(
+        field,
+        definedTypes,
+        model.schemaName
+      );
+    }
+
+    if (!isPrimaryPresent) {
+      console.warn(
+        `Model ${model.schemaName} does not have a primary key, adding a default 'dummy_id_<random>' field with "unique" constraint`
+      );
+      if (failOnWarn) process.exit(1);
+      else {
+        model.fields.push(generateDummyID());
+      }
+    }
+  }
+
+  return jsonData;
 }

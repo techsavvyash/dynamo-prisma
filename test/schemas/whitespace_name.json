@@ -1,0 +1,32 @@
+{
+  "schema": [
+    {
+      "schemaName": "white space name",
+      "fields": [
+        {
+          "fieldName": "white space field",
+          "type": "String",
+          "description": "",
+          "maxLength": "",
+          "nullable": false,
+          "unique": false,
+          "vectorEmbed": false
+        }
+      ],
+      "description": "Schema for seed treating materials data with details of each order"
+    }
+  ],
+  "dataSource": {
+    "name": "db",
+    "provider": "postgresql",
+    "url": {
+      "fromEnv": "DATABASE_URL"
+    },
+    "extensions": ["vector", "pg_trgm"]
+  },
+  "generator": {
+    "provider": "prisma-client-js",
+    "generatorName": "client",
+    "previewFeatures": ["postgresqlExtensions", "views"]
+  }
+}
