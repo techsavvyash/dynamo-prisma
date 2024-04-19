@@ -1,14 +1,9 @@
 {
   "name": "@techsavvyash/dynamo-prisma",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Create Prisma Models Dynamically",
-  "main": "dist/index.js",
-  "module": "commonjs",
+  "main": "src/index.ts",
   "scripts": {
-    "test": "jest",
-    "build": "tsc",
-    "generate-schema": "npm run build && node dist/src/cli.js ./demo.json",
-    "verify-schema": "npx prisma validate",
     "cleanup": "rm -r ./prisma"
   },
   "author": "Himanshu, Sooraj, Yash",
