@@ -5,7 +5,7 @@ Generate Prisma schema dynamically using json file.
 ## Installation
 
 ```bash
-npm install @techsavvyash/dynamo-prisma@0.0.1
+npm install @techsavvyash/dynamo-prisma
 ```
 
 

@@ -95,7 +95,7 @@ export function checkIllegalCombinationOfFieldAttributes(
 }
 
 // TODO: Change this to use the `pp package`(https://github.com/techsavvyash/pp) package which uses internal prisma DMMF
-export function parseExistingModels(fileContent: string) {
+export function parsePrismaSchemaModels(fileContent: string) {
   const modelRegex = /model\s+(\w+)\s+{/g;
   const models: string[] = [];
   let match;

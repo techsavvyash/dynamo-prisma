@@ -1,9 +1,10 @@
 {
   "name": "@techsavvyash/dynamo-prisma",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Create Prisma Models Dynamically",
   "main": "src/index.ts",
   "scripts": {
+    "test": "jest",
     "cleanup": "rm -r ./prisma"
   },
   "author": "Himanshu, Sooraj, Yash",
@@ -17,7 +18,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "jest": "^29.5.0",
+    "jest": "^29.7.0",
     "prisma": "5.12.1",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",

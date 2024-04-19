@@ -1,6 +1,6 @@
 /**
  * @description This is just for manual testing
- * run: npx ts-node src/cli.ts ./test/schemas/no_unique.json
+ * run: npx ts-node test/cli.ts ./test/schemas/no_unique.json
  */
 import { generatePrismaSchemaFile } from "../src/schemaGenerator";
 import { readJsonFile } from "../src/utils/utils";
@@ -16,6 +16,7 @@ export async function main(argv: string[]) {
   const filePath = argv[2];
   const data = readJsonFile(filePath);
   const migrateModels: any = await generatePrismaSchemaFile(data);
+  console.log("migration models: ", migrateModels);
   validateAndMigrate(migrateModels);
 
   return filePath;
