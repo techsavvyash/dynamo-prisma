@@ -62,6 +62,8 @@ export function validateAndMigrate(migrateModels: string[]) {
     })
     .then(() => {
       console.log("Migration files created successfully.");
+      // upload the migration files to minio
+
       return runCommand("npx", ["prisma", "migrate", "deploy"]);
     })
     .then(() => {
