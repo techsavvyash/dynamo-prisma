@@ -1,4 +1,6 @@
 import * as fs from "fs";
+import { getDMMF } from "@prisma/internals";
+// const  = pkg;
 
 import { generatePrismaSchemaFile } from "../src";
 import {
@@ -35,19 +37,29 @@ describe("tests for schema generation", () => {
 
   it("should generate a schema.prisma with dummy_id for a schema with no id and only unique field being optional", async () => {
     const fileContent = readJsonFile("./test/schemas/optional_unique.json");
-    await generatePrismaSchemaFile(fileContent).then((migrationModels) => {
-      expect(migrationModels).toBeDefined();
-      expect(fs.existsSync("./prisma/schema.prisma")).toBe(true);
-      const schemaPrismaContent = fs.readFileSync(
-        "./prisma/schema.prisma",
-        "utf8"
-      );
-      expect(schemaPrismaContent).toBeDefined();
-      const models = parsePrismaSchemaModels(schemaPrismaContent);
-      expect(models).toContain("User");
-      expect(models).toContain("Post");
-      expect(models).toContain("Comment");
-    });
+    await generatePrismaSchemaFile(fileContent).then(
+      async (migrationModels) => {
+        expect(migrationModels).toBeDefined();
+        expect(fs.existsSync("./prisma/schema.prisma")).toBe(true);
+        const schemaPrismaContent = fs.readFileSync(
+          "./prisma/schema.prisma",
+          "utf8"
+        );
+        expect(schemaPrismaContent).toBeDefined();
+        const models = parsePrismaSchemaModels(schemaPrismaContent);
+        expect(models).toContain("questions01");
+
+        const dmmf = await getDMMF({
+          datamodel: schemaPrismaContent,
+        });
+        expect(dmmf.datamodel.models.length).toBe(1);
+        expect(
+          dmmf.datamodel.models[0].fields.some(
+            (obj) => obj["name"] === "dummy_id"
+          )
+        ).toBe(true);
+      }
+    );
   });
 
   it("should generate a schema.prisma for a basic file with different casing for types ", async () => {

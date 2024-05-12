@@ -852,7 +852,7 @@
     tmp "0.2.1"
     ts-pattern "4.3.0"
 
-"@prisma/internals@^5.13.0":
+"@prisma/internals@^5.12.1":
   version "5.13.0"
   resolved "https://registry.yarnpkg.com/@prisma/internals/-/internals-5.13.0.tgz#15ba677eec8789d3d36b6eebfa424eeee6b6b028"
   integrity sha512-OPMzS+IBPzCLT4s+IfGUbOhGFY51CFbokIFMZuoSeLKWE8UvDlitiXZ3OlVqDPUc0AlH++ysQHzDISHbZD+ZUg==
@@ -1440,7 +1440,7 @@ caniuse-lite@^1.0.30001587:
 
 chalk@4.1.2, chalk@^4.0.0, chalk@^4.1.0:
   version "4.1.2"
-  resolved "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-4.1.2.tgz#aac4e2b7734a740867aeb16bf02aad556a1e7a01"
   integrity sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==
   dependencies:
     ansi-styles "^4.1.0"
