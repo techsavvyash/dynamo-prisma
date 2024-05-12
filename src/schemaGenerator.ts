@@ -51,7 +51,7 @@ export async function generateIfNoSchema(
       recursive: true,
     });
     // fs.writeFileSync(prismaFilePath, result);
-    await formatValidateAndWrite(schemaString, prismaFilePath);
+    await formatValidateAndWrite(result, prismaFilePath);
     console.log("🚀 Prisma schema generated successfully!");
     migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
   } catch (err) {

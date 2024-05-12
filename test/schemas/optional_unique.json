@@ -1,0 +1,45 @@
+{
+  "schema": [
+    {
+      "schemaName": "questions01",
+      "fields": [
+        {
+          "fieldName": "question",
+          "type": "String",
+          "description": "",
+          "maxLength": 10,
+          "isNullable": true,
+          "isUnique": false,
+          "isVectorEmbed": true,
+          "isUuid": true,
+          "embeddingAlgo": "text-embedding-ada-002"
+        },
+        {
+          "fieldName": "answer",
+          "type": "String",
+          "description": "",
+          "maxLength": "",
+          "isNullable": true,
+          "isId": false,
+          "isUuid": false,
+          "isUnique": true,
+          "isVectorEmbed": false
+        }
+      ],
+      "description": "schema for questions and answers"
+    }
+  ],
+  "dataSource": {
+    "name": "db",
+    "provider": "postgresql",
+    "url": {
+      "fromEnv": "DATABASE_URL"
+    },
+    "extensions": ["vector", "pg_trgm"]
+  },
+  "generator": {
+    "provider": "prisma-client-js",
+    "generatorName": "client",
+    "previewFeatures": ["postgresqlExtensions", "views"]
+  }
+}

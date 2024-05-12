@@ -194,8 +194,8 @@ export async function formatValidateAndWrite(
     if (fs.existsSync(filePath + ".bak")) fs.unlinkSync(filePath + ".bak");
   } catch (err) {
     console.log("Error while running prisma format and validate: ", err);
-    fs.unlinkSync(filePath);
     if (fileExists) {
+      fs.unlinkSync(filePath);
       fs.renameSync(filePath + ".bak", filePath);
     }
     throw new Error(
