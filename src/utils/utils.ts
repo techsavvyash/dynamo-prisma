@@ -187,6 +187,9 @@ export async function formatValidateAndWrite(
   try {
     await runPrismaFormat();
     await runPrismaValidate();
+    // delete the backup
+    // TODO: Add error handling with custom error codes on file operations so that the user can perform a manual cleanup and the entire process does not fail
+    fs.unlinkSync(filePath + ".bak");
   } catch (err) {
     console.log("Error while running prisma format and validate: ", err);
     fs.unlinkSync(filePath);
