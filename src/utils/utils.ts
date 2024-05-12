@@ -36,10 +36,10 @@ export function generateDummyID() {
     description: "Dummy ID of the user",
     maxLength: null,
     default: null,
-    nullable: false,
-    unique: true,
+    isNullable: false,
+    isUnique: true,
     isId: true,
-    uuid: true,
+    isUuid: true,
   };
 }
 
@@ -74,7 +74,7 @@ export function checkIllegalCombinationOfFieldAttributes(
 ) {
   matchAndFixFieldTypeCasing(field, definedTypes);
   // make sure that the field is not both id and nullable
-  if (field.nullable && (field.isId || field.isForeignKey)) {
+  if (field.isNullable && (field.isId || field.isForeignKey)) {
     throw new Error(
       JSON.stringify({
         error: true,
@@ -88,7 +88,7 @@ export function checkIllegalCombinationOfFieldAttributes(
   }
 
   // make sure that the field is not both autoincrement and uuid
-  if (field.autoincrement && field.uuid) {
+  if (field.isAutoIncrement && field.isUuid) {
     throw new Error(
       JSON.stringify({
         error: true,
@@ -98,7 +98,10 @@ export function checkIllegalCombinationOfFieldAttributes(
   }
 
   // make sure if a field is autoincrement then it is of a legal type that supports autoincrement
-  if (field.autoincrement && !AUTO_INCREMENT_LEGAL_TYPES.includes(field.type)) {
+  if (
+    field.isAutoIncrement &&
+    !AUTO_INCREMENT_LEGAL_TYPES.includes(field.type)
+  ) {
     throw new Error(
       JSON.stringify({
         error: true,
@@ -110,7 +113,7 @@ export function checkIllegalCombinationOfFieldAttributes(
   }
 
   // make sure if a field is uuid then it is of a legal type that supports uuid
-  if (field.uuid && !UUID_LEGAL_TYPES.includes(field.type)) {
+  if (field.isUuid && !UUID_LEGAL_TYPES.includes(field.type)) {
     throw new Error(
       JSON.stringify({
         error: true,
@@ -145,7 +148,6 @@ export function parseExistingEnums(fileContent: string) {
     enums.push(enumName);
   }
 
-  console.log("Enums:", enums);
   return enums;
 }
 
@@ -189,7 +191,7 @@ export async function formatValidateAndWrite(
     await runPrismaValidate();
     // delete the backup
     // TODO: Add error handling with custom error codes on file operations so that the user can perform a manual cleanup and the entire process does not fail
-    fs.unlinkSync(filePath + ".bak");
+    if (fs.existsSync(filePath + ".bak")) fs.unlinkSync(filePath + ".bak");
   } catch (err) {
     console.log("Error while running prisma format and validate: ", err);
     fs.unlinkSync(filePath);

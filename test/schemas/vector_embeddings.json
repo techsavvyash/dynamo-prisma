@@ -8,9 +8,9 @@
           "type": "String",
           "description": "",
           "maxLength": "",
-          "nullable": false,
-          "unique": false,
-          "vectorEmbed": true,
+          "isNullable": false,
+          "isUnique": false,
+          "isVectorEmbed": true,
           "embeddingAlgo": "text-embedding-ada-002"
         }
       ],

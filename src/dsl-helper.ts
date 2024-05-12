@@ -46,13 +46,13 @@ export function createFields(fields: Field[]): any[] {
         fieldData.fieldName,
         fieldData.type as ScalarType,
         fieldData.isList || undefined, //isList boolean | undefined
-        !fieldData.nullable || false, //isRequired boolean | undefined
-        fieldData.isId ? fieldData.isId : fieldData.unique || false,
+        !fieldData.isNullable || false, //isRequired boolean | undefined
+        fieldData.isId ? fieldData.isId : fieldData.isUnique || false,
         fieldData.isId || false,
         undefined, // isUpdatedAt
-        fieldData.isId && fieldData.autoincrement
+        fieldData.isId && fieldData.isAutoIncrement
           ? { callee: AUTO_INCREMENT }
-          : fieldData.isId && fieldData.uuid
+          : fieldData.isId && fieldData.isUuid
           ? { callee: UUID }
           : fieldData.default || undefined, // default values SaclarFeildDefault | undefined
         undefined, // documentation string | undefined
@@ -61,7 +61,7 @@ export function createFields(fields: Field[]): any[] {
       )
     );
 
-    if (fieldData.vectorEmbed) {
+    if (fieldData.isVectorEmbed) {
       if (
         Object.keys(EMBEDDING_ALGO_SIZE).includes(fieldData.embeddingAlgo) ===
         false

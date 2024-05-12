@@ -26,9 +26,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("User");
       expect(models).toContain("Post");
       expect(models).toContain("Comment");
@@ -44,9 +42,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("uSer");
       expect(models).toContain("Post");
       expect(models).toContain("Comment");
@@ -63,9 +59,7 @@ describe("tests for schema generation", () => {
       "utf8"
     );
     expect(schemaPrismaContent).toBeDefined();
-    console.log("schemaPrismaContent: ", schemaPrismaContent);
     const models = parsePrismaSchemaModels(schemaPrismaContent);
-    console.log("models: ", models);
     expect(models).toContain("dash_name");
   });
 
@@ -79,9 +73,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("no_unique");
     });
   });
@@ -96,9 +88,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("white_space_name");
     });
   });
@@ -113,9 +103,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("vector_embedding");
       const pattern = /@default\("text-embedding-ada-002"\)/;
       expect(pattern.test(schemaPrismaContent)).toBe(true);
@@ -132,12 +120,9 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("User");
       const enums = parseExistingEnums(schemaPrismaContent);
-      console.log("enums: ", enums);
       expect(enums).toBeDefined();
       expect(enums.length).toBeGreaterThan(0);
       expect(enums).toContain("UserType");

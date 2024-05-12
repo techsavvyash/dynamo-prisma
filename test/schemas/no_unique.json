@@ -8,9 +8,9 @@
           "type": "String",
           "description": "",
           "maxLength": "",
-          "nullable": false,
-          "unique": false,
-          "vectorEmbed": false
+          "isNullable": false,
+          "isUnique": false,
+          "isVectorEmbed": false
         }
       ],
       "description": "Schema for seed treating materials data with details of each order"

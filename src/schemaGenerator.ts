@@ -51,7 +51,7 @@ export async function generateIfNoSchema(
       recursive: true,
     });
     // fs.writeFileSync(prismaFilePath, result);
-    formatValidateAndWrite(schemaString, prismaFilePath);
+    await formatValidateAndWrite(schemaString, prismaFilePath);
     console.log("🚀 Prisma schema generated successfully!");
     migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
   } catch (err) {
@@ -80,7 +80,7 @@ export async function generateSchemaWhenFilePresent(
 
   try {
     // fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
-    formatValidateAndWrite(schemaString, prismaFilePath);
+    await formatValidateAndWrite(schemaString, prismaFilePath);
     console.log("🚀 Prisma schema generated successfully!");
     migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
   } catch (err) {

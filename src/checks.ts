@@ -92,7 +92,7 @@ function sanitizeJSONSchema(
     let isPrimaryPresent = false;
     for (const field of model.fields) {
       field.fieldName = fixDashesAndSpaces(field.fieldName);
-      isPrimaryPresent = isPrimaryPresent || field.isId || field.unique;
+      isPrimaryPresent = isPrimaryPresent || field.isId || field.isUnique;
       checkIllegalCombinationOfFieldAttributes(
         field,
         definedTypes,

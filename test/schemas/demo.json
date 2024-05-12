@@ -9,10 +9,10 @@
           "description": "ID of the user",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false,
+          "isNullable": false,
+          "isUnique": false,
           "isId": true,
-          "uuid": true
+          "isUuid": true
         },
         {
           "fieldName": "username",
@@ -20,9 +20,9 @@
           "description": "Username of the user",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": true,
-          "uuid": true
+          "isNullable": false,
+          "isUnique": true,
+          "isUuid": true
         },
         {
           "fieldName": "email",
@@ -30,9 +30,9 @@
           "description": "Email of the user",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": true,
-          "uuid": true
+          "isNullable": false,
+          "isUnique": true,
+          "isUuid": true
         },
         {
           "fieldName": "type",
@@ -40,9 +40,9 @@
           "description": "Type of the user",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false,
-          "uuid": true
+          "isNullable": false,
+          "isUnique": false,
+          "isUuid": true
         },
         {
           "fieldName": "password",
@@ -50,9 +50,9 @@
           "description": "Password of the user",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false,
-          "uuid": true
+          "isNullable": false,
+          "isUnique": false,
+          "isUuid": true
         },
         {
           "fieldName": "posts",
@@ -60,8 +60,8 @@
           "description": "Posts authored by the user",
           "maxLength": null,
           "default": null,
-          "nullable": true,
-          "unique": false
+          "isNullable": true,
+          "isUnique": false
         }
       ],
       "description": "User model"
@@ -74,9 +74,9 @@
           "type": "Int",
           "description": "ID of the post",
           "maxLength": null,
-          "nullable": false,
+          "isNullable": false,
           "isId": true,
-          "unique": true,
+          "isUnique": true,
           "autoincrement": true
         },
         {
@@ -85,8 +85,8 @@
           "description": "Title of the post",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false
+          "isNullable": false,
+          "isUnique": false
         },
         {
           "fieldName": "content",
@@ -94,8 +94,8 @@
           "description": "Content of the post",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false
+          "isNullable": false,
+          "isUnique": false
         },
         {
           "fieldName": "author",
@@ -103,8 +103,8 @@
           "description": "Author of the post",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false
+          "isNullable": false,
+          "isUnique": false
         },
         {
           "fieldName": "comments",
@@ -112,8 +112,8 @@
           "description": "Comments associated with the post",
           "maxLength": null,
           "default": null,
-          "nullable": true,
-          "unique": false
+          "isNullable": true,
+          "isUnique": false
         }
       ],
       "description": "Post model"
@@ -127,8 +127,8 @@
           "description": "ID of the comment",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false,
+          "isNullable": false,
+          "isUnique": false,
           "isId": true
         },
         {
@@ -137,8 +137,8 @@
           "description": "Content of the comment",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false
+          "isNullable": false,
+          "isUnique": false
         },
         {
           "fieldName": "author",
@@ -146,8 +146,8 @@
           "description": "Author of the comment",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false
+          "isNullable": false,
+          "isUnique": false
         },
         {
           "fieldName": "post",
@@ -155,8 +155,8 @@
           "description": "Post associated with the comment",
           "maxLength": null,
           "default": null,
-          "nullable": false,
-          "unique": false,
+          "isNullable": false,
+          "isUnique": false,
           "isForeignKey": true,
           "vectorEmbed": true,
           "embeddingAlgo": "text-embedding-3-large"
