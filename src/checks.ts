@@ -24,6 +24,7 @@ export function checkJSON(
   failOnWarn = false
 ): Schema {
   const newModelObjects = [];
+
   const models = jsonData.schema.map((model) => {
     if (!existingData.models.includes(model.schemaName)) {
       newModelObjects.push(model);
@@ -89,9 +90,22 @@ function sanitizeJSONSchema(
   for (const model of jsonData.schema) {
     model.schemaName = fixDashesAndSpaces(model.schemaName);
     let isPrimaryPresent = false;
+    let isUnqiueAndNullable = false;
+    let isUniqueAndNotNullable = false;
+    const uniqueWithNullables = [];
+
     for (const field of model.fields) {
       field.fieldName = fixDashesAndSpaces(field.fieldName);
-      isPrimaryPresent = isPrimaryPresent || field.isId || field.unique;
+      isPrimaryPresent = isPrimaryPresent || field.isId;
+
+      if (field.isNullable && field.isUnique) {
+        isUnqiueAndNullable = true;
+        uniqueWithNullables.push(field.fieldName);
+      } else if (!field.isNullable && field.isUnique) {
+        isUniqueAndNotNullable = true;
+        isPrimaryPresent = true;
+      }
+
       checkIllegalCombinationOfFieldAttributes(
         field,
         definedTypes,
@@ -101,7 +115,7 @@ function sanitizeJSONSchema(
 
     if (!isPrimaryPresent) {
       console.warn(
-        `Model ${model.schemaName} does not have a primary key, adding a default 'dummy_id_<random>' field with "unique" constraint`
+        `Model ${model.schemaName} does not have a primary key or a non optional/nullable unique field adding a default 'dummy_id' field with "unique" constraint`
       );
       if (failOnWarn) process.exit(1);
       else {

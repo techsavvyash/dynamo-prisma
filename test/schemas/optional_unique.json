@@ -1,20 +1,32 @@
 {
   "schema": [
     {
-      "schemaName": "vector_embedding",
+      "schemaName": "questions01",
       "fields": [
         {
-          "fieldName": "Crop",
+          "fieldName": "question",
+          "type": "String",
+          "description": "",
+          "maxLength": 10,
+          "isNullable": true,
+          "isUnique": false,
+          "isVectorEmbed": true,
+          "isUuid": true,
+          "embeddingAlgo": "text-embedding-ada-002"
+        },
+        {
+          "fieldName": "answer",
           "type": "String",
           "description": "",
           "maxLength": "",
-          "isNullable": false,
-          "isUnique": false,
-          "isVectorEmbed": true,
-          "embeddingAlgo": "text-embedding-ada-002"
+          "isNullable": true,
+          "isId": false,
+          "isUuid": false,
+          "isUnique": true,
+          "isVectorEmbed": false
         }
       ],
-      "description": "Schema for seed treating materials data with details of each order"
+      "description": "schema for questions and answers"
     }
   ],
   "dataSource": {

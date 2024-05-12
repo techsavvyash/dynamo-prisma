@@ -26,10 +26,42 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("User");
+      expect(models).toContain("Post");
+      expect(models).toContain("Comment");
+    });
+  });
+
+  it("should generate a schema.prisma with dummy_id for a schema with no id and only unique field being optional", async () => {
+    const fileContent = readJsonFile("./test/schemas/optional_unique.json");
+    await generatePrismaSchemaFile(fileContent).then((migrationModels) => {
+      expect(migrationModels).toBeDefined();
+      expect(fs.existsSync("./prisma/schema.prisma")).toBe(true);
+      const schemaPrismaContent = fs.readFileSync(
+        "./prisma/schema.prisma",
+        "utf8"
+      );
+      expect(schemaPrismaContent).toBeDefined();
+      const models = parsePrismaSchemaModels(schemaPrismaContent);
+      expect(models).toContain("User");
+      expect(models).toContain("Post");
+      expect(models).toContain("Comment");
+    });
+  });
+
+  it("should generate a schema.prisma for a basic file with different casing for types ", async () => {
+    const fileContent = readJsonFile("./test/schemas/casing.json");
+    await generatePrismaSchemaFile(fileContent).then((migrationModels) => {
+      expect(migrationModels).toBeDefined();
+      expect(fs.existsSync("./prisma/schema.prisma")).toBe(true);
+      const schemaPrismaContent = fs.readFileSync(
+        "./prisma/schema.prisma",
+        "utf8"
+      );
+      expect(schemaPrismaContent).toBeDefined();
+      const models = parsePrismaSchemaModels(schemaPrismaContent);
+      expect(models).toContain("uSer");
       expect(models).toContain("Post");
       expect(models).toContain("Comment");
     });
@@ -45,9 +77,7 @@ describe("tests for schema generation", () => {
       "utf8"
     );
     expect(schemaPrismaContent).toBeDefined();
-    console.log("schemaPrismaContent: ", schemaPrismaContent);
     const models = parsePrismaSchemaModels(schemaPrismaContent);
-    console.log("models: ", models);
     expect(models).toContain("dash_name");
   });
 
@@ -61,9 +91,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("no_unique");
     });
   });
@@ -78,9 +106,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("white_space_name");
     });
   });
@@ -95,9 +121,7 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("vector_embedding");
       const pattern = /@default\("text-embedding-ada-002"\)/;
       expect(pattern.test(schemaPrismaContent)).toBe(true);
@@ -114,12 +138,9 @@ describe("tests for schema generation", () => {
         "utf8"
       );
       expect(schemaPrismaContent).toBeDefined();
-      console.log("schemaPrismaContent: ", schemaPrismaContent);
       const models = parsePrismaSchemaModels(schemaPrismaContent);
-      console.log("models: ", models);
       expect(models).toContain("User");
       const enums = parseExistingEnums(schemaPrismaContent);
-      console.log("enums: ", enums);
       expect(enums).toBeDefined();
       expect(enums.length).toBeGreaterThan(0);
       expect(enums).toContain("UserType");

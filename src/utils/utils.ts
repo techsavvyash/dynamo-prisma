@@ -6,6 +6,7 @@ import {
   UUID_LEGAL_TYPES,
 } from "./constants";
 import { Field, Schema } from "../types/dynamoPrisma.types";
+import { runPrismaFormat, runPrismaValidate } from "../commands";
 export function fixDashesAndSpaces(str: string): string {
   let modified = str;
   let hasDashes = str.includes("-");
@@ -35,11 +36,35 @@ export function generateDummyID() {
     description: "Dummy ID of the user",
     maxLength: null,
     default: null,
-    nullable: false,
-    unique: true,
+    isNullable: false,
+    isUnique: true,
     isId: true,
-    uuid: true,
+    isUuid: true,
   };
+}
+
+export function matchAndFixFieldTypeCasing(
+  field: Field,
+  definedTypes: string[]
+) {
+  const fieldType = field.type.toLowerCase();
+  let isPresent = false;
+  for (const definedType of definedTypes) {
+    if (definedType.toLowerCase() === fieldType) {
+      isPresent = true;
+      field.type = definedType;
+      break;
+    }
+  }
+
+  if (!isPresent) {
+    throw new Error(
+      JSON.stringify({
+        error: true,
+        message: `Field type ${field.type} is not supported`,
+      })
+    );
+  }
 }
 
 export function checkIllegalCombinationOfFieldAttributes(
@@ -47,20 +72,23 @@ export function checkIllegalCombinationOfFieldAttributes(
   definedTypes: string[],
   schemaName: string
 ) {
-  // make sure the field is of a supported type
-  if (!definedTypes.includes(field.type)) {
+  matchAndFixFieldTypeCasing(field, definedTypes);
+  // make sure that the field is not both id and nullable
+  if (field.isNullable && (field.isId || field.isForeignKey)) {
     throw new Error(
       JSON.stringify({
         error: true,
-        message: `${field.fieldName} in model ${schemaName} is of type ${
-          field.type
-        } which is not included in the following types ${definedTypes.toString()}`,
+        message: `${
+          field.fieldName
+        } in model ${schemaName} cannot be both nullable and ${
+          field.isId ? "id" : "foreign key"
+        }`,
       })
     );
   }
 
   // make sure that the field is not both autoincrement and uuid
-  if (field.autoincrement && field.uuid) {
+  if (field.isAutoIncrement && field.isUuid) {
     throw new Error(
       JSON.stringify({
         error: true,
@@ -70,7 +98,10 @@ export function checkIllegalCombinationOfFieldAttributes(
   }
 
   // make sure if a field is autoincrement then it is of a legal type that supports autoincrement
-  if (field.autoincrement && !AUTO_INCREMENT_LEGAL_TYPES.includes(field.type)) {
+  if (
+    field.isAutoIncrement &&
+    !AUTO_INCREMENT_LEGAL_TYPES.includes(field.type)
+  ) {
     throw new Error(
       JSON.stringify({
         error: true,
@@ -82,7 +113,7 @@ export function checkIllegalCombinationOfFieldAttributes(
   }
 
   // make sure if a field is uuid then it is of a legal type that supports uuid
-  if (field.uuid && !UUID_LEGAL_TYPES.includes(field.type)) {
+  if (field.isUuid && !UUID_LEGAL_TYPES.includes(field.type)) {
     throw new Error(
       JSON.stringify({
         error: true,
@@ -117,7 +148,6 @@ export function parseExistingEnums(fileContent: string) {
     enums.push(enumName);
   }
 
-  console.log("Enums:", enums);
   return enums;
 }
 
@@ -126,4 +156,54 @@ export function readJsonFile(filePath: string): Schema {
     throw new Error(`Invalid file path: ${filePath}`);
   }
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown as Schema;
+}
+
+/**
+ * @description Formats and validates the generated prisma schema and updates/creates the schema.prisma file accordiongly
+ */
+export async function formatValidateAndWrite(
+  schemaString: string,
+  filePath: string
+) {
+  // 1. save the current schema.prisma as schema.prisma.bak
+  // 2. save the new schema as schema.prisma
+  // 3. run prismaformat
+  // 4. run prisma validate
+  // 5. if validate fails, then delete schema.prisma and rename schema.prisma.bak as schema.prisma
+  //    if validate passes, then delete schema.prisma.bak
+
+  let fileExists = false;
+  let originalPrismaContent = "";
+  if (fs.existsSync(filePath)) {
+    fileExists = true;
+    originalPrismaContent = fs.readFileSync(filePath, "utf8");
+    fs.renameSync(filePath, filePath + ".bak");
+  }
+
+  fs.writeFileSync(
+    filePath,
+    originalPrismaContent + "\n" + schemaString,
+    "utf8"
+  );
+
+  try {
+    await runPrismaFormat();
+    await runPrismaValidate();
+    // delete the backup
+    // TODO: Add error handling with custom error codes on file operations so that the user can perform a manual cleanup and the entire process does not fail
+    if (fs.existsSync(filePath + ".bak")) fs.unlinkSync(filePath + ".bak");
+  } catch (err) {
+    console.log("Error while running prisma format and validate: ", err);
+    if (fileExists) {
+      fs.unlinkSync(filePath);
+      fs.renameSync(filePath + ".bak", filePath);
+    }
+    throw new Error(
+      JSON.stringify({
+        error: true,
+        message:
+          "Previous schema unchanged, the package is not able to generate a valid schema.prisma file for the said input, please check your schema for any errors and report the issue to pacakge maintainers by opening an issue on github with the relevant input",
+      })
+    );
+  }
 }

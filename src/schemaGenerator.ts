@@ -6,7 +6,11 @@ import { createModels } from "./dsl-helper";
 import { checkJSON } from "./checks";
 import { createSchema, print } from "prisma-schema-dsl";
 import { Schema } from "./types/dynamoPrisma.types";
-import { parseExistingEnums, parsePrismaSchemaModels } from "./utils/utils";
+import {
+  formatValidateAndWrite,
+  parseExistingEnums,
+  parsePrismaSchemaModels,
+} from "./utils/utils";
 import { validateAndMigrate } from "./commands";
 
 export async function generateIfNoSchema(
@@ -46,7 +50,8 @@ export async function generateIfNoSchema(
     fs.mkdirSync(prismaFilePath.split("/schema.prisma")[0], {
       recursive: true,
     });
-    fs.writeFileSync(prismaFilePath, result);
+    // fs.writeFileSync(prismaFilePath, result);
+    await formatValidateAndWrite(result, prismaFilePath);
     console.log("🚀 Prisma schema generated successfully!");
     migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
   } catch (err) {
@@ -74,7 +79,8 @@ export async function generateSchemaWhenFilePresent(
   const migrateModels: string[] = [];
 
   try {
-    fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
+    // fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
+    await formatValidateAndWrite(schemaString, prismaFilePath);
     console.log("🚀 Prisma schema generated successfully!");
     migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
   } catch (err) {

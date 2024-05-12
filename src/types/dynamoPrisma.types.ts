@@ -9,13 +9,13 @@ export interface Field {
   type: string;
   description: string;
   maxLength?: number | null;
-  nullable: boolean;
-  unique: boolean;
+  isNullable: boolean;
+  isUnique: boolean;
   default?: string | null;
-  autoincrement?: boolean;
-  uuid?: boolean;
+  isAutoIncrement?: boolean;
+  isUuid?: boolean;
   isId?: boolean;
-  vectorEmbed?: boolean;
+  isVectorEmbed?: boolean;
   embeddingAlgo?: string;
   isForeignKey?: boolean;
   isList?: boolean;

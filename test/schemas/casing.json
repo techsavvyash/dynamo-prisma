@@ -1,7 +1,7 @@
 {
   "schema": [
     {
-      "schemaName": "User",
+      "schemaName": "uSer",
       "fields": [
         {
           "fieldName": "id",
@@ -46,7 +46,7 @@
         },
         {
           "fieldName": "password",
-          "type": "String",
+          "type": "STRING",
           "description": "Password of the user",
           "maxLength": null,
           "default": null,
@@ -165,6 +165,7 @@
       "description": "Comment model"
     }
   ],
+
   "dataSource": {
     "name": "db",
     "provider": "postgresql",
