@@ -1,11 +1,12 @@
 {
   "name": "@techsavvyash/dynamo-prisma",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Create Prisma Models Dynamically",
   "main": "dist/src/index.js",
   "files": [
     "dist"
   ],
+  "homepage": "https://github.com/techsavvyash/dynamo-prisma",
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -16,6 +17,8 @@
   "dependencies": {
     "@nestjs/testing": "^10.3.3",
     "@prisma/client": "5.12.1",
+    "@prisma/internals": "^5.13.0",
+    "@prisma/sdk": "^4.0.0",
     "@types/es6-promise": "^3.3.0",
     "prisma-schema-dsl": "^2.2.0",
     "prisma-schema-dsl-types": "^1.1.2"
