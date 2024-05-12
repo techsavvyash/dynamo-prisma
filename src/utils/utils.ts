@@ -171,20 +171,26 @@ export async function formatValidateAndWrite(
   //    if validate passes, then delete schema.prisma.bak
 
   let fileExists = false;
+  let originalPrismaContent = "";
   if (fs.existsSync(filePath)) {
     fileExists = true;
+    originalPrismaContent = fs.readFileSync(filePath, "utf8");
     fs.renameSync(filePath, filePath + ".bak");
   }
 
-  fs.writeFileSync(filePath, schemaString, "utf8");
+  fs.writeFileSync(
+    filePath,
+    originalPrismaContent + "\n" + schemaString,
+    "utf8"
+  );
 
   try {
     await runPrismaFormat();
     await runPrismaValidate();
   } catch (err) {
     console.log("Error while running prisma format and validate: ", err);
+    fs.unlinkSync(filePath);
     if (fileExists) {
-      fs.unlinkSync(filePath);
       fs.renameSync(filePath + ".bak", filePath);
     }
     throw new Error(

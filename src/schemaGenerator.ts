@@ -50,7 +50,8 @@ export async function generateIfNoSchema(
     fs.mkdirSync(prismaFilePath.split("/schema.prisma")[0], {
       recursive: true,
     });
-    fs.writeFileSync(prismaFilePath, result);
+    // fs.writeFileSync(prismaFilePath, result);
+    formatValidateAndWrite(schemaString, prismaFilePath);
     console.log("🚀 Prisma schema generated successfully!");
     migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
   } catch (err) {
