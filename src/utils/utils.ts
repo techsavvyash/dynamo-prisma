@@ -74,10 +74,7 @@ export function checkIllegalCombinationOfFieldAttributes(
 ) {
   matchAndFixFieldTypeCasing(field, definedTypes);
   // make sure that the field is not both id and nullable
-  if (
-    field.isNullable &&
-    (field.isId || field.isUnique || field.isForeignKey)
-  ) {
+  if (field.isNullable && (field.isId || field.isForeignKey)) {
     throw new Error(
       JSON.stringify({
         error: true,
