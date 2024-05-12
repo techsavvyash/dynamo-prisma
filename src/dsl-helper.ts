@@ -89,7 +89,7 @@ export function createFields(fields: Field[]): any[] {
           `${fieldData.fieldName}Embedding`,
           `Unsupported("vector(${
             EMBEDDING_ALGO_SIZE[fieldData.embeddingAlgo]
-          })")` as ScalarType,
+          })")?` as ScalarType,
           false,
           true,
           false,

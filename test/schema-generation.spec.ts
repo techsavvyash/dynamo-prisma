@@ -34,6 +34,24 @@ describe("tests for schema generation", () => {
       expect(models).toContain("Comment");
     });
   });
+  it("should generate a schema.prisma for a basic file with different casing for types ", async () => {
+    const fileContent = readJsonFile("./test/schemas/casing.json");
+    await generatePrismaSchemaFile(fileContent).then((migrationModels) => {
+      expect(migrationModels).toBeDefined();
+      expect(fs.existsSync("./prisma/schema.prisma")).toBe(true);
+      const schemaPrismaContent = fs.readFileSync(
+        "./prisma/schema.prisma",
+        "utf8"
+      );
+      expect(schemaPrismaContent).toBeDefined();
+      console.log("schemaPrismaContent: ", schemaPrismaContent);
+      const models = parsePrismaSchemaModels(schemaPrismaContent);
+      console.log("models: ", models);
+      expect(models).toContain("uSer");
+      expect(models).toContain("Post");
+      expect(models).toContain("Comment");
+    });
+  });
 
   it("should generate a schema.prisma for a file with dashes in schema and field name", async () => {
     const fileContent = readJsonFile("./test/schemas/dash_name.json");

@@ -24,6 +24,7 @@ export function checkJSON(
   failOnWarn = false
 ): Schema {
   const newModelObjects = [];
+
   const models = jsonData.schema.map((model) => {
     if (!existingData.models.includes(model.schemaName)) {
       newModelObjects.push(model);

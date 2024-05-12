@@ -4,7 +4,11 @@
  */
 import { generatePrismaSchemaFile } from "../src/schemaGenerator";
 import { readJsonFile } from "../src/utils/utils";
-import { validateAndMigrate } from "../src/commands";
+import {
+  applyMigrations,
+  createMigrations,
+  validateAndMigrate,
+} from "../src/commands";
 
 export async function main(argv: string[]) {
   console.warn(argv);
@@ -17,8 +21,8 @@ export async function main(argv: string[]) {
   const data = readJsonFile(filePath);
   const migrateModels: any = await generatePrismaSchemaFile(data);
   console.log("migration models: ", migrateModels);
-  validateAndMigrate(migrateModels);
-
+  await createMigrations(migrateModels);
+  await applyMigrations();
   return filePath;
 }
 

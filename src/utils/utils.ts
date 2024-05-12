@@ -6,6 +6,7 @@ import {
   UUID_LEGAL_TYPES,
 } from "./constants";
 import { Field, Schema } from "../types/dynamoPrisma.types";
+import { runPrismaFormat, runPrismaValidate } from "../commands";
 export function fixDashesAndSpaces(str: string): string {
   let modified = str;
   let hasDashes = str.includes("-");
@@ -42,19 +43,46 @@ export function generateDummyID() {
   };
 }
 
+export function matchAndFixFieldTypeCasing(
+  field: Field,
+  definedTypes: string[]
+) {
+  const fieldType = field.type.toLowerCase();
+  let isPresent = false;
+  for (const definedType of definedTypes) {
+    if (definedType.toLowerCase() === fieldType) {
+      isPresent = true;
+      field.type = definedType;
+      break;
+    }
+  }
+
+  if (!isPresent) {
+    throw new Error(
+      JSON.stringify({
+        error: true,
+        message: `Field type ${field.type} is not supported`,
+      })
+    );
+  }
+}
+
 export function checkIllegalCombinationOfFieldAttributes(
   field: Field,
   definedTypes: string[],
   schemaName: string
 ) {
-  // make sure the field is of a supported type
-  if (!definedTypes.includes(field.type)) {
+  matchAndFixFieldTypeCasing(field, definedTypes);
+  // make sure that the field is not both id and nullable
+  if (field.nullable && (field.isId || field.isForeignKey)) {
     throw new Error(
       JSON.stringify({
         error: true,
-        message: `${field.fieldName} in model ${schemaName} is of type ${
-          field.type
-        } which is not included in the following types ${definedTypes.toString()}`,
+        message: `${
+          field.fieldName
+        } in model ${schemaName} cannot be both nullable and ${
+          field.isId ? "id" : "foreign key"
+        }`,
       })
     );
   }
@@ -126,4 +154,45 @@ export function readJsonFile(filePath: string): Schema {
     throw new Error(`Invalid file path: ${filePath}`);
   }
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown as Schema;
+}
+
+/**
+ * @description Formats and validates the generated prisma schema and updates/creates the schema.prisma file accordiongly
+ */
+export async function formatValidateAndWrite(
+  schemaString: string,
+  filePath: string
+) {
+  // 1. save the current schema.prisma as schema.prisma.bak
+  // 2. save the new schema as schema.prisma
+  // 3. run prismaformat
+  // 4. run prisma validate
+  // 5. if validate fails, then delete schema.prisma and rename schema.prisma.bak as schema.prisma
+  //    if validate passes, then delete schema.prisma.bak
+
+  let fileExists = false;
+  if (fs.existsSync(filePath)) {
+    fileExists = true;
+    fs.renameSync(filePath, filePath + ".bak");
+  }
+
+  fs.writeFileSync(filePath, schemaString, "utf8");
+
+  try {
+    await runPrismaFormat();
+    await runPrismaValidate();
+  } catch (err) {
+    console.log("Error while running prisma format and validate: ", err);
+    if (fileExists) {
+      fs.unlinkSync(filePath);
+      fs.renameSync(filePath + ".bak", filePath);
+    }
+    throw new Error(
+      JSON.stringify({
+        error: true,
+        message:
+          "Previous schema unchanged, the package is not able to generate a valid schema.prisma file for the said input, please check your schema for any errors and report the issue to pacakge maintainers by opening an issue on github with the relevant input",
+      })
+    );
+  }
 }

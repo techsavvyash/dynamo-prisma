@@ -6,7 +6,11 @@ import { createModels } from "./dsl-helper";
 import { checkJSON } from "./checks";
 import { createSchema, print } from "prisma-schema-dsl";
 import { Schema } from "./types/dynamoPrisma.types";
-import { parseExistingEnums, parsePrismaSchemaModels } from "./utils/utils";
+import {
+  formatValidateAndWrite,
+  parseExistingEnums,
+  parsePrismaSchemaModels,
+} from "./utils/utils";
 import { validateAndMigrate } from "./commands";
 
 export async function generateIfNoSchema(
@@ -74,7 +78,8 @@ export async function generateSchemaWhenFilePresent(
   const migrateModels: string[] = [];
 
   try {
-    fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
+    // fs.appendFileSync(prismaFilePath, "\n\n" + schemaString, "utf8");
+    formatValidateAndWrite(schemaString, prismaFilePath);
     console.log("🚀 Prisma schema generated successfully!");
     migrateModels.push(...jsonData.schema.map((model) => model.schemaName));
   } catch (err) {

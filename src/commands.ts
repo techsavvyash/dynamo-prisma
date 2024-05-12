@@ -23,7 +23,7 @@ function runCommand(command, args) {
   });
 }
 
-export function runDBPull() {
+export function runPrismaDBPull() {
   exec("npx prisma db pull", (error, stdout, stderr) => {
     if (error) {
       console.error('Error executing "npx prisma db pull"', error);
@@ -45,9 +45,96 @@ export function runDBPull() {
   });
 }
 
+export function runPrismaFormat() {
+  return runCommand("npx", ["prisma", "format"])
+    .then(() => {
+      console.log("Prisma schema has been formatted successfully.");
+      return {
+        status: true,
+        message: "Prisma schema has been formatted successfully.",
+      };
+    })
+    .catch((error) => {
+      console.error("An error occurred:", error);
+      throw new Error(
+        JSON.stringify({
+          error: true,
+          message: `Error formatting Prisma schema: ${error}`,
+        })
+      );
+    });
+}
+
+export function runPrismaValidate() {
+  return runCommand("npx", ["prisma", "validate"])
+    .then(() => {
+      console.log("Prisma schema is valid.");
+      return {
+        status: true,
+        message: "Prisma schema is valid.",
+      };
+    })
+    .catch((error) => {
+      console.error("An error occurred:", error);
+      throw new Error(
+        JSON.stringify({
+          error: true,
+          message: `Error validating Prisma schema: ${error}`,
+        })
+      );
+    });
+}
+
+export function createMigrations(migrateModels) {
+  return runCommand("npx", [
+    "prisma",
+    "migrate",
+    "dev",
+    "--name",
+    `${Date.now()}_dynamo_prisma_` + migrateModels.join("_"),
+    "--create-only",
+  ])
+    .then(() => {
+      console.log("Migrations have been generated successfully.");
+      return {
+        status: true,
+        message: "Migrations have been generated successfully.",
+      };
+    })
+    .catch((error) => {
+      console.error("An error occurred:", error);
+      throw new Error(
+        JSON.stringify({
+          error: true,
+          message: `Error applying migrations: ${error}`,
+        })
+      );
+    });
+}
+
+export function applyMigrations() {
+  return runCommand("npx", ["prisma", "migrate", "deploy"])
+    .then(() => {
+      console.log("Migrations have been successfully deployed.");
+      return {
+        status: true,
+        message: "Migrations have been successfully deployed.",
+      };
+    })
+    .catch((error) => {
+      console.error("An error occurred:", error);
+      throw new Error(
+        JSON.stringify({
+          error: true,
+          message: `Error applying migrations: ${error}`,
+        })
+      );
+    });
+}
+
 export function validateAndMigrate(migrateModels: string[]) {
   console.log("migrateModels: ", migrateModels);
-  runCommand("npx", ["prisma", "validate"])
+  return runCommand("npx", ["prisma", "validate"])
     .then(() => {
       console.log("Prisma schema is valid.");
 
@@ -66,6 +153,10 @@ export function validateAndMigrate(migrateModels: string[]) {
     })
     .then(() => {
       console.log("Migrations have been successfully deployed.");
+      return {
+        status: true,
+        message: "migrations applied and generated successfully",
+      };
     })
     .catch((error) => {
       console.error("An error occurred:", error);
@@ -76,9 +167,4 @@ export function validateAndMigrate(migrateModels: string[]) {
         })
       );
     });
-
-  return {
-    status: true,
-    message: "migrations applied and generated successfully",
-  };
 }
